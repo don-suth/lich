@@ -1,6 +1,7 @@
 import discord
 from discord import app_commands
 from flavour import pull_random_flavour, fill_random_card_cache
+from warriorcat import get_warriorcat_name
 import asyncio
 
 guilds = []
@@ -35,6 +36,12 @@ client = LichClient()
 async def flavour(interaction: discord.Interaction):
     flavour_text = await pull_random_flavour()
     await interaction.response.send_message(flavour_text)
+
+
+@client.tree.command(description="Generate a random Warrior Cat name. Results may vary.")
+async def warriorcat(interation: discord.Interaction):
+    warriorcat_name = await get_warriorcat_name()
+    await interation.response.send_message(f'Your Warrior Cat name is: {warriorcat_name}')
 
 
 if __name__ == "__main__":

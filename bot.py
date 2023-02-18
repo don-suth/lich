@@ -2,6 +2,7 @@ import discord
 from discord import app_commands
 from flavour import pull_random_flavour, fill_random_card_cache
 from warriorcat import get_warriorcat_name
+from dice import roll_dice, get_help
 import asyncio
 
 guilds = []
@@ -43,6 +44,15 @@ async def warriorcat(interation: discord.Interaction):
     warriorcat_name = await get_warriorcat_name()
     await interation.response.send_message(f'Your Warrior Cat name is: {warriorcat_name}')
 
+
+@client.tree.command(description="Roll some dice! See syntax by using 'help' as your expression.")
+async def roll(interaction: discord.Interaction, expression: str):
+    if expression.lower() == 'help':
+        dice_result = await get_help()
+        error = True
+    else:
+        dice_result, error = await roll_dice(expression)
+    await interaction.response.send_message(dice_result, ephemeral=error)
 
 if __name__ == "__main__":
     with open('secret', 'r') as f:

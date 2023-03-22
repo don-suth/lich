@@ -3,6 +3,7 @@ from discord import app_commands
 from flavour import pull_random_flavour, fill_random_card_cache
 from warriorcat import get_warriorcat_name
 from dice import roll_dice, get_help
+from statuses import change_status
 import asyncio
 
 guilds = []
@@ -15,6 +16,7 @@ class LichClient(discord.Client):
     def __init__(self):
         super().__init__(intents=discord.Intents.default())
         self.random_card_task = None
+        self.random_status_task = None
         self.tree = app_commands.CommandTree(self)
 
     async def setup_hook(self):
@@ -28,6 +30,8 @@ class LichClient(discord.Client):
         print('Populating flavour text cache')
         if self.random_card_task is None:
             self.random_card_task = asyncio.create_task(fill_random_card_cache())
+        if self.random_status_task is None:
+            self.random_status_task = asyncio.create_task(change_status(self))
 
 
 client = LichClient()
@@ -53,6 +57,13 @@ async def roll(interaction: discord.Interaction, expression: str):
     else:
         dice_result, error = await roll_dice(expression)
     await interaction.response.send_message(dice_result, ephemeral=error)
+
+
+@client.tree.command(description="Set the status of the bot.")
+async def status(interaction: discord.Interaction, status_text: str):
+    game = discord.Game(name=status_text)
+    await client.change_presence(status=discord.Status.online, activity=game)
+    await interaction.response.send_message('Status changed.', ephemeral=True, delete_after=10)
 
 if __name__ == "__main__":
     with open('secret', 'r') as f:

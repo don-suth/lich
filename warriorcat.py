@@ -4,7 +4,7 @@ prefixes = ['Sedge', 'Spider', 'Beech', 'Mottle', 'Wigeon', 'Shrew', 'Swan', 'Da
 suffixes = ['Claw', 'Cloud', 'Ear', 'Eye', 'Face', 'Fang', 'Flower', 'Foot', 'Fur', 'Heart', 'Jaw', 'Leaf', 'Nose', 'Pelt', 'Step', 'Storm', 'Stream', 'Stripe', 'Tail', 'Whisker']
 
 async def get_warriorcat_name():
-    pre = random.choice(prefixes)
-    suf = random.choice(suffixes)
-    warriorcat_name = f'{pre}{suf}'.title()
-    return warriorcat_name
+	pre = random.choice(prefixes)
+	suf = random.choice(suffixes)
+	warriorcat_name = f'{pre}{suf}'.title()
+	return warriorcat_name

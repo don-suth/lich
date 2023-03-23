@@ -11,7 +11,9 @@ from get_docker_secret import get_docker_secret
 guilds = []
 
 try:
-	guilds = get_docker_secret('discord_bot_guilds', safe=False).split('\n')
+	secret_guilds = get_docker_secret('discord_bot_guilds', safe=False).split('\n')
+	for line in secret_guilds:
+		guilds.append(discord.Object(id=line.rstrip('\n')))
 except (TypeError, ValueError):
 	with open('guilds') as guild_file:
 		for line in guild_file.readlines():

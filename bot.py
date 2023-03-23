@@ -5,11 +5,17 @@ from warriorcat import get_warriorcat_name
 from dice import roll_dice, get_help
 from statuses import change_status
 import asyncio
+from get_docker_secret import get_docker_secret
+
 
 guilds = []
-with open('guilds') as guild_file:
-	for line in guild_file.readlines():
-		guilds.append(discord.Object(id=line.rstrip('\n')))
+
+try:
+	guilds = get_docker_secret('discord_bot_guilds', safe=False).split('\n')
+except (TypeError, ValueError):
+	with open('guilds') as guild_file:
+		for line in guild_file.readlines():
+			guilds.append(discord.Object(id=line.rstrip('\n')))
 
 
 class LichClient(discord.Client):
@@ -66,6 +72,9 @@ async def status(interaction: discord.Interaction, status_text: str):
 	await interaction.response.send_message('Status changed.', ephemeral=True, delete_after=10)
 
 if __name__ == "__main__":
-	with open('secret', 'r') as f:
-		secret = f.read()
+	try:
+		secret = get_docker_secret('discord_bot_secret', safe=False)
+	except (TypeError, ValueError):
+		with open('secret', 'r') as f:
+			secret = f.read()
 	client.run(secret)

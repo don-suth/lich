@@ -5,14 +5,20 @@ import asyncio
 
 STATUS_CHOICES = [
 	('playing',         'with my new dice'),
-	('playing',         'a TTRPG'),
+	('playing',         'a Paranoia one-shot'),
 	('playing',         'a 5-player EDH game'),
+	('playing', 		'a 13th Age campaign'),
+	('playing', 		'a Smithy; +3 cards'),
+	('playing', 		'a Counterspell.'),
+	('playing',			'three Wild Magic cards'),
 	('watching',        'the webcams 👁️'),
 	('watching',        'my minis dry'),
 	('watching',        'board game reviews'),
 	('watching',        'the OGM liveblog'),
+	('watching', 		'for the Imposter'),
 	('listening to',    'Vengabus.'),
 	('listening to',    'the Tav noise'),
+	('listening to',	'a Committee meeting'),
 ]
 
 

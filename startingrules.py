@@ -57,8 +57,8 @@ rules = [
 	'The player that has most recently held {object}',
 	'The player that has most recently bought {object}',
 	'The player that has most recently {activity}',
-	'Each player rolls {dice}. The highest total'
-	'Each player rolls {dice}. The lowest total'
+	'Each player rolls {dice}. The highest total',
+	'Each player rolls {dice}. The lowest total',
 	'The player immediately to the left of {user}',
 	'The player immediately to the right of {user}',
 	'The player furthest to the {direction}'
@@ -78,7 +78,7 @@ def get_random_starting_rule(user):
 		random_activity = random.choice(activities)
 		final_rule = base_rule.replace('{activity}', random_activity)
 	elif '{dice}' in base_rule:
-		random_dice = random.choice('{dice}')
+		random_dice = random.choice(dice)
 		final_rule = base_rule.replace('{dice}', random_dice)
 	elif '{direction}' in base_rule:
 		random_direction = random.choice(directions)

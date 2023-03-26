@@ -4,6 +4,7 @@ from flavour import pull_random_flavour, fill_random_card_cache
 from warriorcat import get_warriorcat_name
 from dice import roll_dice, get_help
 from statuses import change_status
+from startingrules import get_random_starting_rule
 import asyncio
 from get_docker_secret import get_docker_secret
 
@@ -67,11 +68,16 @@ async def roll(interaction: discord.Interaction, expression: str):
 	await interaction.response.send_message(dice_result, ephemeral=error)
 
 
-@client.tree.command(description="Set the status of the bot.")
-async def status(interaction: discord.Interaction, status_text: str):
-	game = discord.Game(name=status_text)
-	await client.change_presence(status=discord.Status.online, activity=game)
-	await interaction.response.send_message('Status changed.', ephemeral=True, delete_after=10)
+@client.tree.command(description="Get a random rule for seeing who goes first in your game!")
+async def starting_rule(interaction: discord.Interaction):
+	rule = get_random_starting_rule(interaction.user.display_name)
+	await interaction.response.send_message(f'Starting rule: {rule}')
+
+# @client.tree.command(description="Set the status of the bot.")
+# async def status(interaction: discord.Interaction, status_text: str):
+# 	game = discord.Game(name=status_text)
+# 	await client.change_presence(status=discord.Status.online, activity=game)
+# 	await interaction.response.send_message('Status changed.', ephemeral=True, delete_after=10)
 
 if __name__ == "__main__":
 	try:

@@ -20,7 +20,7 @@ async def change_status(discord_client):
 	while True:
 		activity = get_random_status_choice()
 		await discord_client.change_presence(activity=activity)
-		await asyncio.sleep(5)
+		await asyncio.sleep(60*10)
 
 
 def get_random_status_choice():

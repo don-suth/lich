@@ -43,6 +43,13 @@ class LichClient(discord.Client):
 			self.random_status_task = asyncio.create_task(change_status(self))
 
 
+class RerollStartingRuleView(discord.ui.View):
+	@discord.ui.button(label='That rule is lame. Give me another one!', style=discord.ButtonStyle.blurple)
+	async def reroll(self, interaction: discord.Interaction, button: discord.ui.Button):
+		new_rule = get_random_starting_rule(interaction.user.display_name)
+		await interaction.response.edit_message(content=new_rule)
+
+
 client = LichClient()
 
 

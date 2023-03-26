@@ -78,7 +78,7 @@ async def roll(interaction: discord.Interaction, expression: str):
 @client.tree.command(description="Get a random rule for seeing who goes first in your game!")
 async def starting_rule(interaction: discord.Interaction):
 	rule = get_random_starting_rule(interaction.user.display_name)
-	await interaction.response.send_message(f'Starting rule: {rule}')
+	await interaction.response.send_message(f'Starting rule: {rule}', view=RerollStartingRuleView())
 
 # @client.tree.command(description="Set the status of the bot.")
 # async def status(interaction: discord.Interaction, status_text: str):

@@ -30,6 +30,8 @@ objects = [
 	'a calculator',
 	'a USB drive',
 	'some kind of hot beverage',
+	'a miniature',
+	'some kind of hot food',
 ]
 
 directions = [
@@ -50,7 +52,7 @@ rules = [
 	'The player with the smallest hands',
 	'The oldest player',
 	'The youngest player',
-	'The player with the age closest to the average'
+	'The player with the age closest to the average',
 	'The player that looks the oldest (decide as a group)',
 	'The player that looks the youngest (decide as a group)',
 	'The player that is wearing the most {colour}',
@@ -61,7 +63,7 @@ rules = [
 	'Each player rolls {dice}. The lowest total',
 	'The player immediately to the left of {user}',
 	'The player immediately to the right of {user}',
-	'The player furthest to the {direction}'
+	'The player furthest to the {direction}',
 ]
 
 def get_random_starting_rule(user):

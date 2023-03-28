@@ -8,7 +8,9 @@ from startingrules import get_random_starting_rule
 import asyncio
 from get_docker_secret import get_docker_secret
 import datetime
+import random
 
+UNIGAMES_CAMERAS = ['ipcamera6', 'ipcamera9', 'ipcamera10']
 
 guilds = []
 
@@ -51,41 +53,68 @@ class RerollStartingRuleView(discord.ui.View):
 		await interaction.response.edit_message(content=new_rule)
 
 
-class WebcamSwitcherButton(discord.ui.Button):
-	def __init__(self, label, camera, time, start):
+class EmbedPaginatorButton(discord.ui.Button):
+	def __init__(self, label, embed, starting=False):
 		super().__init__(label=label)
-		self.image_url = f"https://webcam.ucc.asn.au/archive.php?camera={camera}&timestamp={time}"
-		self.webcam_embed = discord.Embed()
-		self.webcam_embed.set_image(url=self.image_url)
-		if start is True:
+		self.embed = embed
+		if starting is True:
 			self.style = discord.ButtonStyle.primary
-			self.disabled = True
 		else:
 			self.style = discord.ButtonStyle.secondary
-			self.disabled = False
 
 	async def callback(self, interaction: discord.Interaction):
 		for child in self.view.children:
-			child.disabled = False
 			child.style = discord.ButtonStyle.secondary
-		self.disabled = True
 		self.style = discord.ButtonStyle.primary
-		await interaction.response.edit_message(embed=self.webcam_embed, view=self.view)
+		await interaction.response.edit_message(embed=self.embed, view=self.view)
+
+
+# class WebcamSwitcherButton(discord.ui.Button):
+# 	def __init__(self, label, camera, time, start):
+# 		super().__init__(label=label)
+# 		self.image_url = f"https://webcam.ucc.asn.au/archive.php?camera={camera}&timestamp={time}"
+# 		self.webcam_embed = discord.Embed(title="Unigames @ ")
+# 		self.webcam_embed.set_image(url=self.image_url)
+# 		if start is True:
+# 			self.style = discord.ButtonStyle.primary
+# 			self.disabled = True
+# 		else:
+# 			self.style = discord.ButtonStyle.secondary
+# 			self.disabled = False
+#
+# 	async def callback(self, interaction: discord.Interaction):
+# 		for child in self.view.children:
+# 			child.disabled = False
+# 			child.style = discord.ButtonStyle.secondary
+# 		self.disabled = True
+# 		self.style = discord.ButtonStyle.primary
+# 		await interaction.response.edit_message(embed=self.webcam_embed, view=self.view)
 
 
 class WebcamSwitcherView(discord.ui.View):
-	children: [WebcamSwitcherButton]
+	children: [EmbedPaginatorButton]
+	def __init__(self):
+		super().__init__()
+		time_now = datetime.datetime.now()
+		time_string = time_now.strftime("Unigames @ %d/%m/%Y %H:%M")
+		time_code = time_now.strftime("%Y%m%d-%H%M")
+		for i in range(len(UNIGAMES_CAMERAS)):
+			camera = UNIGAMES_CAMERAS[i]
+			camera_embed = discord.Embed(title=time_string)
+			camera_embed.set_image(url=f"https://webcam.ucc.asn.au/archive.php?camera={camera}&timestamp={time_code}")
+			self.add_item(EmbedPaginatorButton(label=str(i+1), embed=camera_embed, starting=(i == 0)))
+		self.current_camera = 0
+
+	def get_current_embed(self):
+		return self.children[self.current_camera].embed
+
+
+class JokeWebcamView(discord.ui.View):
+	children: [EmbedPaginatorButton]
 
 	def __init__(self):
 		super().__init__()
-		time_now = datetime.datetime.now().strftime("%Y%m%d-%H%M")
-		self.current_camera = 0
-		self.add_item(WebcamSwitcherButton(label="1", camera="ipcamera6", time=time_now, start=True))
-		self.add_item(WebcamSwitcherButton(label="2", camera="ipcamera9", time=time_now, start=False))
-		self.add_item(WebcamSwitcherButton(label="3", camera="ipcamera10", time=time_now, start=False))
 
-	def get_current_embed(self):
-		return self.children[self.current_camera].webcam_embed
 
 client = LichClient()
 

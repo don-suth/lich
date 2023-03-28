@@ -7,6 +7,7 @@ from statuses import change_status
 from startingrules import get_random_starting_rule
 import asyncio
 from get_docker_secret import get_docker_secret
+import datetime
 
 
 guilds = []
@@ -50,6 +51,42 @@ class RerollStartingRuleView(discord.ui.View):
 		await interaction.response.edit_message(content=new_rule)
 
 
+class WebcamSwitcherButton(discord.ui.Button):
+	def __init__(self, label, camera, time, start):
+		super().__init__(label=label)
+		self.image_url = f"https://webcam.ucc.asn.au/archive.php?camera={camera}&timestamp={time}"
+		self.webcam_embed = discord.Embed()
+		self.webcam_embed.set_image(url=self.image_url)
+		if start is True:
+			self.style = discord.ButtonStyle.primary
+			self.disabled = True
+		else:
+			self.style = discord.ButtonStyle.secondary
+			self.disabled = False
+
+	async def callback(self, interaction: discord.Interaction):
+		for child in self.view.children:
+			child.disabled = False
+			child.style = discord.ButtonStyle.secondary
+		self.disabled = True
+		self.style = discord.ButtonStyle.primary
+		await interaction.response.edit_message(embed=self.webcam_embed, view=self.view)
+
+
+class WebcamSwitcherView(discord.ui.View):
+	children: [WebcamSwitcherButton]
+
+	def __init__(self):
+		super().__init__()
+		time_now = datetime.datetime.now().strftime("%Y%m%d-%H%M")
+		self.current_camera = 0
+		self.add_item(WebcamSwitcherButton(label="1", camera="ipcamera6", time=time_now, start=True))
+		self.add_item(WebcamSwitcherButton(label="2", camera="ipcamera9", time=time_now, start=False))
+		self.add_item(WebcamSwitcherButton(label="3", camera="ipcamera10", time=time_now, start=False))
+
+	def get_current_embed(self):
+		return self.children[self.current_camera].webcam_embed
+
 client = LichClient()
 
 
@@ -79,6 +116,18 @@ async def roll(interaction: discord.Interaction, expression: str):
 async def starting_rule(interaction: discord.Interaction):
 	rule = get_random_starting_rule(interaction.user.display_name)
 	await interaction.response.send_message(f'Starting rule: {rule}', view=RerollStartingRuleView())
+
+
+@client.tree.command(description="Show how to get to the Unigames clubroom!")
+async def gavin(interaction: discord.Interaction):
+	await interaction.response.send_message('Delegated. (coming soon)')
+
+@client.tree.command(description="Take a look at what's happening in the clubroom right now!")
+async def webcams(interaction: discord.Interaction):
+	switcher_view = WebcamSwitcherView()
+	camera_embed = switcher_view.get_current_embed()
+	await interaction.response.send_message(embed=camera_embed, view=switcher_view)
+
 
 # @client.tree.command(description="Set the status of the bot.")
 # async def status(interaction: discord.Interaction, status_text: str):

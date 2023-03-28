@@ -10,7 +10,7 @@ STATUS_CHOICES = [
 	('playing', 		'a 13th Age campaign'),
 	('playing', 		'a Smithy; +3 cards'),
 	('playing', 		'a Counterspell.'),
-	('playing',			'three Wild Magic cards'),
+	('playing',			'three Wild Magics!!!'),
 	('watching',        'the webcams 👁️'),
 	('watching',        'my minis dry'),
 	('watching',        'board game reviews'),

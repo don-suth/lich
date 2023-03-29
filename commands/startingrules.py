@@ -1,4 +1,5 @@
 import random
+import discord
 
 activities = [
 	'bought something from the Unigames clubroom',
@@ -66,6 +67,14 @@ rules = [
 	'The player furthest to the {direction}',
 ]
 
+
+class RerollStartingRuleView(discord.ui.View):
+	@discord.ui.button(label='That rule is lame. Give me another one!', style=discord.ButtonStyle.blurple)
+	async def reroll(self, interaction: discord.Interaction, button: discord.ui.Button):
+		new_rule = get_random_starting_rule(interaction.user.display_name)
+		await interaction.response.edit_message(content=new_rule)
+
+
 def get_random_starting_rule(user):
 	base_rule = random.choice(rules)
 	base_rule += ' goes first!'
@@ -92,3 +101,13 @@ def get_random_starting_rule(user):
 		final_rule = base_rule
 
 	return final_rule
+
+
+@discord.app_commands.command(description="Get a random rule for seeing who goes first in your game!")
+async def starting_rule(interaction: discord.Interaction):
+	rule = get_random_starting_rule(interaction.user.display_name)
+	await interaction.response.send_message(f'Starting rule: {rule}', view=RerollStartingRuleView())
+
+
+async def setup(bot):
+	bot.tree.add_command(starting_rule)

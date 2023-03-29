@@ -4,11 +4,10 @@ from flavour import pull_random_flavour, fill_random_card_cache
 from warriorcat import get_warriorcat_name
 from dice import roll_dice, get_help
 from statuses import change_status
-from startingrules import get_random_starting_rule
+from commands.startingrules import get_random_starting_rule
 import asyncio
 from get_docker_secret import get_docker_secret
 import datetime
-import random
 
 UNIGAMES_CAMERAS = ['ipcamera6', 'ipcamera9', 'ipcamera10']
 
@@ -32,6 +31,7 @@ class LichClient(discord.Client):
 		self.tree = app_commands.CommandTree(self)
 
 	async def setup_hook(self):
+
 		for guild in guilds:
 			self.tree.copy_global_to(guild=guild)
 			await self.tree.sync(guild=guild)
@@ -46,11 +46,11 @@ class LichClient(discord.Client):
 			self.random_status_task = asyncio.create_task(change_status(self))
 
 
-class RerollStartingRuleView(discord.ui.View):
-	@discord.ui.button(label='That rule is lame. Give me another one!', style=discord.ButtonStyle.blurple)
-	async def reroll(self, interaction: discord.Interaction, button: discord.ui.Button):
-		new_rule = get_random_starting_rule(interaction.user.display_name)
-		await interaction.response.edit_message(content=new_rule)
+# class RerollStartingRuleView(discord.ui.View):
+# 	@discord.ui.button(label='That rule is lame. Give me another one!', style=discord.ButtonStyle.blurple)
+# 	async def reroll(self, interaction: discord.Interaction, button: discord.ui.Button):
+# 		new_rule = get_random_starting_rule(interaction.user.display_name)
+# 		await interaction.response.edit_message(content=new_rule)
 
 
 class EmbedPaginatorButton(discord.ui.Button):
@@ -141,10 +141,10 @@ async def roll(interaction: discord.Interaction, expression: str):
 	await interaction.response.send_message(dice_result, ephemeral=error)
 
 
-@client.tree.command(description="Get a random rule for seeing who goes first in your game!")
-async def starting_rule(interaction: discord.Interaction):
-	rule = get_random_starting_rule(interaction.user.display_name)
-	await interaction.response.send_message(f'Starting rule: {rule}', view=RerollStartingRuleView())
+# @client.tree.command(description="Get a random rule for seeing who goes first in your game!")
+# async def starting_rule(interaction: discord.Interaction):
+# 	rule = get_random_starting_rule(interaction.user.display_name)
+# 	await interaction.response.send_message(f'Starting rule: {rule}', view=RerollStartingRuleView())
 
 
 @client.tree.command(description="Show how to get to the Unigames clubroom!")

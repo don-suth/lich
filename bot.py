@@ -1,5 +1,6 @@
 import discord
 from discord import app_commands
+from discord.ext import commands
 from flavour import pull_random_flavour, fill_random_card_cache
 from warriorcat import get_warriorcat_name
 from dice import roll_dice, get_help
@@ -23,15 +24,14 @@ except (TypeError, ValueError):
 			guilds.append(discord.Object(id=line.rstrip('\n')))
 
 
-class LichClient(discord.Client):
+class LichClient(commands.Bot):
 	def __init__(self):
-		super().__init__(intents=discord.Intents.default())
+		super().__init__(command_prefix=None, intents=discord.Intents.default())
 		self.random_card_task = None
 		self.random_status_task = None
-		self.tree = app_commands.CommandTree(self)
 
 	async def setup_hook(self):
-
+		await self.load_extension("commands.startingrules")
 		for guild in guilds:
 			self.tree.copy_global_to(guild=guild)
 			await self.tree.sync(guild=guild)

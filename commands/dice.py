@@ -1,3 +1,4 @@
+import discord
 import d20
 
 
@@ -39,3 +40,17 @@ async def get_help():
 		"`3d10e10` : Rolls 3d10 and [e]xplodes any 10s rolled.\n\n" \
 		"For full syntax, see https://d20.readthedocs.io/en/latest/start.html#dice-syntax"
 	return help_text
+
+
+@discord.app_commands.command(description="Roll some dice! See syntax by using 'help' as your expression.")
+async def roll(interaction: discord.Interaction, expression: str):
+	if expression.lower() == 'help':
+		dice_result = await get_help()
+		error = True
+	else:
+		dice_result, error = await roll_dice(expression)
+	await interaction.response.send_message(dice_result, ephemeral=error)
+
+
+async def setup(bot):
+	bot.tree.add_command(roll)

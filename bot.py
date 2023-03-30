@@ -1,11 +1,6 @@
 import discord
-from discord import app_commands
 from discord.ext import commands
-from flavour import pull_random_flavour, fill_random_card_cache
-from warriorcat import get_warriorcat_name
-from dice import roll_dice, get_help
 from statuses import change_status
-from commands.startingrules import get_random_starting_rule
 import asyncio
 from get_docker_secret import get_docker_secret
 import datetime
@@ -26,12 +21,16 @@ except (TypeError, ValueError):
 
 class LichClient(commands.Bot):
 	def __init__(self):
-		super().__init__(command_prefix=None, intents=discord.Intents.default())
+		starting_intents = discord.Intents.default()
+		starting_intents.typing = False
+		super().__init__(command_prefix="this_will_never_trigger", intents=starting_intents)
+		self.default_extensions = ['commands.startingrules', 'commands.dice', 'commands.warriorcat', 'commands.flavour']
 		self.random_card_task = None
 		self.random_status_task = None
 
 	async def setup_hook(self):
-		await self.load_extension("commands.startingrules")
+		for extension in self.default_extensions:
+			await self.load_extension(extension)
 		for guild in guilds:
 			self.tree.copy_global_to(guild=guild)
 			await self.tree.sync(guild=guild)
@@ -39,9 +38,6 @@ class LichClient(commands.Bot):
 	async def on_ready(self):
 		print(f'Logged in as {client.user} (ID: {client.user.id})')
 		print('------')
-		print('Populating flavour text cache')
-		if self.random_card_task is None:
-			self.random_card_task = asyncio.create_task(fill_random_card_cache())
 		if self.random_status_task is None:
 			self.random_status_task = asyncio.create_task(change_status(self))
 
@@ -119,26 +115,9 @@ class JokeWebcamView(discord.ui.View):
 client = LichClient()
 
 
-@client.tree.command(description="Returns a random flavour text from Magic the Gathering. See if you can guess the card!")
-async def flavour(interaction: discord.Interaction):
-	flavour_text = await pull_random_flavour()
-	await interaction.response.send_message(flavour_text)
 
 
-@client.tree.command(description="Generate a random Warrior Cat name. Results may vary.")
-async def warriorcat(interation: discord.Interaction):
-	warriorcat_name = await get_warriorcat_name()
-	await interation.response.send_message(f'Your Warrior Cat name is: {warriorcat_name}')
 
-
-@client.tree.command(description="Roll some dice! See syntax by using 'help' as your expression.")
-async def roll(interaction: discord.Interaction, expression: str):
-	if expression.lower() == 'help':
-		dice_result = await get_help()
-		error = True
-	else:
-		dice_result, error = await roll_dice(expression)
-	await interaction.response.send_message(dice_result, ephemeral=error)
 
 
 # @client.tree.command(description="Get a random rule for seeing who goes first in your game!")

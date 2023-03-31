@@ -24,7 +24,7 @@ class LichClient(commands.Bot):
 		super().__init__(command_prefix="this_will_never_trigger", intents=starting_intents)
 		self.default_extensions = \
 			['commands.startingrules', 'commands.dice', 'commands.warriorcat', 'commands.flavour',
-				'commands.webcams', 'commands.gavin']
+				'commands.webcams', 'commands.gavin', 'commands.test']
 		self.random_card_task = None
 		self.random_status_task = None
 

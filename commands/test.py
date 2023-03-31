@@ -7,12 +7,11 @@ class TestGroup(discord.app_commands.Group):
 	async def get_webpage(self, interaction: discord.Interaction):
 		async with ClientSession() as session:
 			response = await session.request(method="GET", url="http://phylactery-dev", timeout=20.0)
-			print("Status:", response.status)
-			print("Content-type:", response.headers['content-type'])
-
+			message = f"Status: {response.status}\n" \
+				f"Content-type: {response.headers['content-type']}\n"
 			html = await response.text()
-			print("Body:", html[:15], "...")
-
+			message += f"Body: {html[:15]}..."
+			interaction.response.send_message(message)
 
 
 async def setup(bot):

@@ -11,7 +11,7 @@ class TestGroup(discord.app_commands.Group):
 				f"Content-type: {response.headers['content-type']}\n"
 			html = await response.text()
 			message += f"Body: {html[:15]}..."
-			interaction.response.send_message(message)
+			await interaction.response.send_message(message)
 
 
 async def setup(bot):

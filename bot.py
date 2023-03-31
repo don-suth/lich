@@ -24,7 +24,7 @@ class LichClient(commands.Bot):
 		super().__init__(command_prefix="this_will_never_trigger", intents=starting_intents)
 		self.default_extensions = \
 			['commands.startingrules', 'commands.dice', 'commands.warriorcat', 'commands.flavour',
-				'commands.webcams']
+				'commands.webcams', 'commands.gavin']
 		self.random_card_task = None
 		self.random_status_task = None
 
@@ -43,11 +43,6 @@ class LichClient(commands.Bot):
 
 
 client = LichClient()
-
-
-@client.tree.command(description="Show how to get to the Unigames clubroom!")
-async def gavin(interaction: discord.Interaction):
-	await interaction.response.send_message('Delegated. (coming soon)')
 
 
 if __name__ == "__main__":

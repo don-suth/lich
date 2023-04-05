@@ -2,9 +2,58 @@ from aiohttp import ClientSession
 import discord
 
 
+item_code = {
+	'BG': 'Board Game',
+	'BK': 'Book',
+	'CG': 'Card Game',
+	'??': '',
+}
+
+
+def trim_description(description):
+	if len(description) < 200:
+		trimmed = description[:200]+'...'
+	else:
+		trimmed = description
+	return trimmed
+
+
 def item_embed_from_json(json) -> discord.Embed:
-	item_embed = discord.Embed(title=json['name'], description=json['description'][:200])
-	item_embed.set_thumbnail(url=json['image'])
+	item_embed = discord.Embed(
+		title=json['name'],
+		description=trim_description(json['description']),
+		colour=discord.Colour.from_str('#622c29'),
+		url=json['url'],
+	)
+	item_embed.set_thumbnail(
+		url=json['image'],
+	)
+	item_embed.set_author(
+		name=item_code[json['type']],
+	)
+	item_embed.add_field(
+		name="In the clubroom?",
+		value=json['availability']['in_clubroom'],
+		inline=True,
+	)
+	if json['is_borrowable'] is True:
+		item_embed.add_field(
+			name="Available to borrow?",
+			value=json['availability']['is_available'],
+			inline=True,
+		)
+	else:
+		item_embed.add_field(
+			name="Borrowable?",
+			value=json['availability']['is_available'],
+			inline=True,
+		)
+	if json['availability']['expected_availability_date'] is not None:
+		item_embed.add_field(
+			name="Expected availability date:",
+			value=json['availability']['expected_availability_date'],
+			inline=False,
+		)
 	return item_embed
 
 

@@ -2,6 +2,12 @@ from aiohttp import ClientSession
 import discord
 
 
+def item_embed_from_json(json) -> discord.Embed:
+	item_embed = discord.Embed(title=json['name'], description=json['description'][:200])
+	item_embed.set_thumbnail(url=json['image'])
+	return item_embed
+
+
 class TestGroup(discord.app_commands.Group):
 	@discord.app_commands.command(description="test interconnectivity")
 	async def get_webpage(self, interaction: discord.Interaction):
@@ -18,8 +24,8 @@ class TestGroup(discord.app_commands.Group):
 		async with ClientSession() as session:
 			response = await session.request(method="GET", url="http://phylactery-dev/api/library/items/random/item", timeout=20.0)
 			json = await response.json()
-			message = f"JSON: ```{json}```"
-			await interaction.response.send_message(message)
+			embed = item_embed_from_json(json)
+			await interaction.response.send_message(embed=embed)
 
 
 async def setup(bot):

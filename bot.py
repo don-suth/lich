@@ -6,7 +6,7 @@ from get_docker_secret import get_docker_secret
 import os
 
 
-LICH_DEBUG = os.environ.get("LICH_DEBUG", False)
+LICH_DEBUG = os.environ.get("LICH_DEBUG", "FALSE")
 
 
 guilds = []
@@ -29,7 +29,7 @@ class LichClient(commands.Bot):
 		self.default_extensions = \
 			['commands.startingrules', 'commands.dice', 'commands.warriorcat', 'commands.flavour',
 				'commands.webcams', 'commands.gavin', 'commands.library_items']
-		if LICH_DEBUG:
+		if LICH_DEBUG == "TRUE":
 			self.default_extensions.append('commands.test')
 
 		self.random_card_task = None

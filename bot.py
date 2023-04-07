@@ -32,8 +32,11 @@ class LichClient(commands.Bot):
 		for extension in self.default_extensions:
 			await self.load_extension(extension)
 		for guild in guilds:
-			self.tree.copy_global_to(guild=guild)
-			await self.tree.sync(guild=guild)
+			try:
+				self.tree.copy_global_to(guild=guild)
+				await self.tree.sync(guild=guild)
+			except discord.errors.Forbidden:
+				pass
 
 	async def on_ready(self):
 		print(f'Logged in as {client.user} (ID: {client.user.id})')

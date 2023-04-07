@@ -75,7 +75,7 @@ class TestGroup(discord.app_commands.Group):
 											 timeout=20.0)
 			json = await response.json()
 			message = f'JSON:\n```{json}```'
-			await interaction.response.send_message(message=message)
+			await interaction.response.send_message(message)
 
 	@discord.app_commands.command(description="test API access")
 	async def random_item(self, interaction: discord.Interaction):

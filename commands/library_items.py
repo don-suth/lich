@@ -16,7 +16,10 @@ item_code = {
 
 
 def trim_description(description):
-	if len(description) < 200:
+	newline = description.find('\n')
+	if newline != -1:
+		trimmed = description[:newline]+'\n...'
+	elif len(description) > 200:
 		trimmed = description[:200]+'...'
 	else:
 		trimmed = description

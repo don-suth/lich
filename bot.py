@@ -3,6 +3,10 @@ from discord.ext import commands
 from statuses import change_status
 import asyncio
 from get_docker_secret import get_docker_secret
+import os
+
+
+LICH_DEBUG = os.environ.get("LICH_DEBUG", False)
 
 
 guilds = []
@@ -24,7 +28,10 @@ class LichClient(commands.Bot):
 		super().__init__(command_prefix="this_will_never_trigger", intents=starting_intents)
 		self.default_extensions = \
 			['commands.startingrules', 'commands.dice', 'commands.warriorcat', 'commands.flavour',
-				'commands.webcams', 'commands.gavin', 'commands.test']
+				'commands.webcams', 'commands.gavin', 'commands.library_items']
+		if LICH_DEBUG:
+			self.default_extensions.append('commands.test')
+
 		self.random_card_task = None
 		self.random_status_task = None
 

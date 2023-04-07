@@ -3,14 +3,14 @@ import datetime
 import UIComponents
 
 UNIGAMES_CAMERAS = ['ipcamera6', 'ipcamera9', 'ipcamera10']
-
+PERTH_TIME = datetime.timezone(datetime.timedelta(hours=8))
 
 class WebcamSwitcherView(discord.ui.View):
 	children: [UIComponents.EmbedPaginatorButton]
 
 	def __init__(self):
 		super().__init__()
-		time_now = datetime.datetime.now()
+		time_now = datetime.datetime.now(PERTH_TIME)
 		time_string = time_now.strftime("Unigames @ %d/%m/%Y %H:%M")
 		time_code = time_now.strftime("%Y%m%d-%H%M")
 		for i in range(len(UNIGAMES_CAMERAS)):

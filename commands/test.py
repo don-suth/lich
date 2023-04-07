@@ -71,7 +71,7 @@ class TestGroup(discord.app_commands.Group):
 	@discord.app_commands.command(description="test JSON")
 	async def raw_json(self, interaction: discord.Interaction):
 		async with ClientSession() as session:
-			response = await session.request(method="GET", url="http://dev.unigames.asn.au/apiitems/random/any",
+			response = await session.request(method="GET", url="http://dev.unigames.asn.au/api/items/random/any",
 											 timeout=20.0)
 			json = await response.json()
 			message = f'JSON:\n```{json}```'
@@ -80,7 +80,7 @@ class TestGroup(discord.app_commands.Group):
 	@discord.app_commands.command(description="test API access")
 	async def random_item(self, interaction: discord.Interaction):
 		async with ClientSession() as session:
-			response = await session.request(method="GET", url="http://dev.unigames.asn.au/apiitems/random/any", timeout=20.0)
+			response = await session.request(method="GET", url="http://dev.unigames.asn.au/api/items/random/any", timeout=20.0)
 			json = await response.json()
 			embed = item_embed_from_json(json)
 			await interaction.response.send_message(embed=embed)

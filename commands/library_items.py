@@ -68,7 +68,7 @@ class RandomGroup(discord.app_commands.Group):
 		async with ClientSession() as session:
 			response = await session.request(
 				method="GET",
-				url=API_ACCESS+"/library/items/random/any",
+				url=API_ACCESS+"/items/random/any",
 				timeout=20.0
 			)
 			json = await response.json()
@@ -80,7 +80,7 @@ class RandomGroup(discord.app_commands.Group):
 		async with ClientSession() as session:
 			response = await session.request(
 				method="GET",
-				url=API_ACCESS+"/library/items/random/book",
+				url=API_ACCESS+"/items/random/book",
 				timeout=20.0
 			)
 			json = await response.json()
@@ -92,7 +92,7 @@ class RandomGroup(discord.app_commands.Group):
 		async with ClientSession() as session:
 			response = await session.request(
 				method="GET",
-				url=API_ACCESS + "/library/items/random/boardgame",
+				url=API_ACCESS + "/items/random/boardgame",
 				timeout=20.0
 			)
 			json = await response.json()
@@ -104,7 +104,7 @@ class RandomGroup(discord.app_commands.Group):
 		async with ClientSession() as session:
 			response = await session.request(
 				method="GET",
-				url=API_ACCESS + "/library/items/random/cardgame",
+				url=API_ACCESS + "/items/random/cardgame",
 				timeout=20.0
 			)
 			json = await response.json()

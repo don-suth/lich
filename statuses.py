@@ -54,7 +54,7 @@ STATUS_CHOICES = [
 
 async def change_status(discord_client):
 	while True:
-		activity = get_random_status_choice()
+		activity = await get_random_status_choice()
 		await discord_client.change_presence(activity=activity)
 		if LICH_DEBUG == 'FALSE':
 			await asyncio.sleep(60*20)
@@ -62,7 +62,7 @@ async def change_status(discord_client):
 			await asyncio.sleep(10)
 
 
-def get_random_status_choice():
+async def get_random_status_choice():
 	choice = random.choice(STATUS_CHOICES)
 	if callable(choice[1]):
 		activity_name = await choice[1]()

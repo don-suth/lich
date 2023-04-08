@@ -36,6 +36,8 @@ class LichClient(commands.Bot):
 		self.random_status_task = None
 
 	async def setup_hook(self):
+		if LICH_DEBUG == "TRUE":
+			print('Lich is operating in DEBUG mode')
 		for extension in self.default_extensions:
 			await self.load_extension(extension)
 		for guild in guilds:

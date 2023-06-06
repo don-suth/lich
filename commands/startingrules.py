@@ -1,49 +1,47 @@
 import random
 import discord
 
-activities = [
-	'bought something from the Unigames clubroom',
-	'been sick',
-	'watered a plant',
-	'left the state',
-	'entered the state',
-	'had a haircut',
-	'been swimming',
-	'finished a shift at work',
-	'watched a full movie',
-	'woken up',
-	'ate something',
-	'had a drink of water',
-]
-
-colours = [
-	'white', 'blue', 'black', 'red', 'green', 'purple', 'grey', 'yellow', 'orange', 'pink', 'brown'
-]
-
-objects = [
-	'a Magic: the Gathering card',
-	'a non-Magic: the Gathering trading card',
-	'a fruit',
-	'a vegetable',
-	'some dice',
-	'a pencil',
-	'a stapler',
-	'a calculator',
-	'a USB drive',
-	'some kind of hot beverage',
-	'a miniature',
-	'some kind of hot food',
-]
-
-directions = [
-	'north', 'south', 'east', 'west',
-	'northeast', 'northwest', 'southeast', 'southwest'
-]
-
-dice = [
-	'a d20', 'a d100', '4d6 and drops the lowest',
-	'a d6', 'a d12', 'a d8', 'a d10',
-]
+fields = {
+	'{activities}' : [
+		'bought something from the Unigames clubroom',
+		'been sick',
+		'watered a plant',
+		'left the state',
+		'entered the state',
+		'had a haircut',
+		'been swimming',
+		'finished a shift at work',
+		'watched a full movie',
+		'woken up',
+		'ate something',
+		'had a drink of water',
+	],
+	'{colours}' : [
+		'white', 'blue', 'black', 'red', 'green', 'purple', 'grey', 'yellow', 'orange', 'pink', 'brown'
+	],
+	'{objects}' : [
+		'a Magic: the Gathering card',
+		'a non-Magic: the Gathering trading card',
+		'a fruit',
+		'a vegetable',
+		'some dice',
+		'a pencil',
+		'a stapler',
+		'a calculator',
+		'a USB drive',
+		'some kind of hot beverage',
+		'a miniature',
+		'some kind of hot food',
+	],
+	'{directions}' : [
+		'north', 'south', 'east', 'west',
+		'northeast', 'northwest', 'southeast', 'southwest'
+	],
+	'{dice}' : [
+		'a d20', 'a d100', '4d6 and drops the lowest',
+		'a d6', 'a d12', 'a d8', 'a d10',
+	],
+}
 
 rules = [
 	'The player with the longest hair',
@@ -76,31 +74,21 @@ class RerollStartingRuleView(discord.ui.View):
 
 
 def get_random_starting_rule(user):
-	base_rule = random.choice(rules)
-	base_rule += ' goes first!'
-	final_rule = None
-	if '{colour}' in base_rule:
-		random_colour = random.choice(colours)
-		final_rule = base_rule.replace('{colour}', random_colour)
-	elif '{object}' in base_rule:
-		random_object = random.choice(objects)
-		final_rule = base_rule.replace('{object}', random_object)
-	elif '{activity}' in base_rule:
-		random_activity = random.choice(activities)
-		final_rule = base_rule.replace('{activity}', random_activity)
-	elif '{dice}' in base_rule:
-		random_dice = random.choice(dice)
-		final_rule = base_rule.replace('{dice}', random_dice)
-	elif '{direction}' in base_rule:
-		random_direction = random.choice(directions)
-		final_rule = base_rule.replace('{direction}', random_direction)
-		final_rule += "\n*(If you're in Unigames, then the wall with the windows is north)*"
-	elif '{user}' in base_rule:
-		final_rule = base_rule.replace('{user}', user)
-	else:
-		final_rule = base_rule
+	rule = random.choice(rules)
+	rule += ' goes first!'
 
-	return final_rule
+	if '{direction}' in rule:
+		rule += "\n*(If you're in Unigames, then the wall with the windows is north)*"
+
+	if '{user}' in rule:
+		rule = rule.replace('{user}', user)
+
+	for field, options in fields:
+		if field in rule:
+			option = random.choice(options)
+			rule = rule.replace(field, option)
+
+	return rule
 
 
 @discord.app_commands.command(description="Get a random rule for seeing who goes first in your game!")

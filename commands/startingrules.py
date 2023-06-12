@@ -2,7 +2,7 @@ import random
 import discord
 
 fields = {
-	'{activities}' : [
+	'{activity}' : [
 		'bought something from the Unigames clubroom',
 		'been sick',
 		'watered a plant',
@@ -16,10 +16,10 @@ fields = {
 		'ate something',
 		'had a drink of water',
 	],
-	'{colours}' : [
+	'{colour}' : [
 		'white', 'blue', 'black', 'red', 'green', 'purple', 'grey', 'yellow', 'orange', 'pink', 'brown'
 	],
-	'{objects}' : [
+	'{object}' : [
 		'a Magic: the Gathering card',
 		'a non-Magic: the Gathering trading card',
 		'a fruit',
@@ -33,7 +33,7 @@ fields = {
 		'a miniature',
 		'some kind of hot food',
 	],
-	'{directions}' : [
+	'{direction}' : [
 		'north', 'south', 'east', 'west',
 		'northeast', 'northwest', 'southeast', 'southwest'
 	],

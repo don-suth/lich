@@ -83,7 +83,7 @@ def get_random_starting_rule(user):
 	if '{user}' in rule:
 		rule = rule.replace('{user}', user)
 
-	for field, options in fields:
+	for field, options in fields.items():
 		if field in rule:
 			option = random.choice(options)
 			rule = rule.replace(field, option)

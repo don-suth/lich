@@ -2,7 +2,7 @@ import random
 import discord
 
 fields = {
-	'{activities}' : [
+	'{activity}' : [
 		'bought something from the Unigames clubroom',
 		'been sick',
 		'watered a plant',
@@ -16,10 +16,10 @@ fields = {
 		'ate something',
 		'had a drink of water',
 	],
-	'{colours}' : [
+	'{colour}' : [
 		'white', 'blue', 'black', 'red', 'green', 'purple', 'grey', 'yellow', 'orange', 'pink', 'brown'
 	],
-	'{objects}' : [
+	'{object}' : [
 		'a Magic: the Gathering card',
 		'a non-Magic: the Gathering trading card',
 		'a fruit',
@@ -33,7 +33,7 @@ fields = {
 		'a miniature',
 		'some kind of hot food',
 	],
-	'{directions}' : [
+	'{direction}' : [
 		'north', 'south', 'east', 'west',
 		'northeast', 'northwest', 'southeast', 'southwest'
 	],
@@ -83,7 +83,7 @@ def get_random_starting_rule(user):
 	if '{user}' in rule:
 		rule = rule.replace('{user}', user)
 
-	for field, options in fields:
+	for field, options in fields.items():
 		if field in rule:
 			option = random.choice(options)
 			rule = rule.replace(field, option)

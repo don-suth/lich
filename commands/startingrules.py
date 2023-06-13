@@ -1,5 +1,6 @@
 import random
 import discord
+from jokes import is_prank_time, there_are_no_rules
 
 fields = {
 	'{activity}' : [
@@ -70,8 +71,13 @@ rules = [
 class RerollStartingRuleView(discord.ui.View):
 	@discord.ui.button(label='That rule is lame. Give me another one!', style=discord.ButtonStyle.blurple)
 	async def reroll(self, interaction: discord.Interaction, button: discord.ui.Button):
-		new_rule = get_random_starting_rule(interaction.user.display_name)
-		await interaction.response.edit_message(content=new_rule)
+		if not is_prank_time():
+			new_rule = get_random_starting_rule(interaction.user.display_name)
+			await interaction.response.edit_message(content=new_rule)
+		else:
+			new_rule = "I am displeased that you called my rules 'lame'.\n" \
+				f"I decree that any player except {interaction.user.display_name} may go first."
+			await interaction.response.edit_message(content=new_rule, view=None)
 
 
 def get_random_starting_rule(user):
@@ -94,9 +100,13 @@ def get_random_starting_rule(user):
 
 @discord.app_commands.command(description="Get a random rule for seeing who goes first in your game!")
 async def starting_rule(interaction: discord.Interaction):
-	rule = get_random_starting_rule(interaction.user.display_name)
-	await interaction.response.send_message(f'Starting rule: {rule}', view=RerollStartingRuleView())
-
+	if not is_prank_time():
+		rule = get_random_starting_rule(interaction.user.display_name)
+		await interaction.response.send_message(f'Starting rule: {rule}', view=RerollStartingRuleView())
+	else:
+		image_embed = discord.Embed()
+		image_embed.set_image(url=there_are_no_rules())
+		await interaction.response.send_message(embed=image_embed)
 
 async def setup(bot):
 	bot.tree.add_command(starting_rule)

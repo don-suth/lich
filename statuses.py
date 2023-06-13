@@ -39,6 +39,7 @@ STATUS_CHOICES = [
 	('playing', 		'a Counterspell.'),
 	('playing',			'three Wild Magics!!!'),
 	('playing',			'not Dungeons & Dragons'),
+	('playing',			'[REDACTED]'),
 	('playing',			random_boardgame),
 	('playing',			random_cardgame),
 	('watching',        'the webcams 👁️'),
@@ -46,9 +47,15 @@ STATUS_CHOICES = [
 	('watching',        'board game reviews'),
 	('watching',        'the OGM liveblog'),
 	('watching', 		'for the Imposter'),
+	('watching',		'for Trouble'),
+	('watching',		'for Communists'),
+	('watching',		'for Mutants'),
+	('watching',		'for Secret Societies'),
+	('watching',		'the Committee closely'),
 	('listening to',    'Vengabus.'),
 	('listening to',    'the Tav noise'),
 	('listening to',	'a Committee meeting'),
+	('listening to',	'the Ultra Violets'),
 ]
 
 

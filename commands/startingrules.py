@@ -15,6 +15,7 @@ fields = {
 		'woken up',
 		'ate something',
 		'had a drink of water',
+		'listened to music',
 	],
 	'{colour}' : [
 		'white', 'blue', 'black', 'red', 'green', 'purple', 'grey', 'yellow', 'orange', 'pink', 'brown'

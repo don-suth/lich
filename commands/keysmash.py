@@ -27,7 +27,7 @@ async def evauluate_keysmash(interaction: discord.Interaction, message: discord.
 		time_to_crack = time_to_crack.replace('  ', ' ')
 		bonus = ""
 		if keysmash_data['crack_time'] > 32000000000:
-			bonus = f"\n*(Nice keysmash {interaction.user.display_name})*"
+			bonus = f"\n*(Nice keysmash {message.author.display_name})*"
 		await interaction.response.send_message(
 			f'It would take `{time_to_crack}` to crack `{keysmash}` if you used it as your password.{bonus}'
 		)

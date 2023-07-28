@@ -1,49 +1,49 @@
 import random
 import discord
+from jokes import is_prank_time, there_are_no_rules
 
-activities = [
-	'bought something from the Unigames clubroom',
-	'been sick',
-	'watered a plant',
-	'left the state',
-	'entered the state',
-	'had a haircut',
-	'been swimming',
-	'finished a shift at work',
-	'watched a full movie',
-	'woken up',
-	'ate something',
-	'had a drink of water',
-]
-
-colours = [
-	'white', 'blue', 'black', 'red', 'green', 'purple', 'grey', 'yellow', 'orange', 'pink', 'brown'
-]
-
-objects = [
-	'a Magic: the Gathering card',
-	'a non-Magic: the Gathering trading card',
-	'a fruit',
-	'a vegetable',
-	'some dice',
-	'a pencil',
-	'a stapler',
-	'a calculator',
-	'a USB drive',
-	'some kind of hot beverage',
-	'a miniature',
-	'some kind of hot food',
-]
-
-directions = [
-	'north', 'south', 'east', 'west',
-	'northeast', 'northwest', 'southeast', 'southwest'
-]
-
-dice = [
-	'a d20', 'a d100', '4d6 and drops the lowest',
-	'a d6', 'a d12', 'a d8', 'a d10',
-]
+fields = {
+	'{activity}' : [
+		'bought something from the Unigames clubroom',
+		'been sick',
+		'watered a plant',
+		'left the state',
+		'entered the state',
+		'had a haircut',
+		'been swimming',
+		'finished a shift at work',
+		'watched a full movie',
+		'woken up',
+		'ate something',
+		'had a drink of water',
+		'listened to music',
+	],
+	'{colour}' : [
+		'white', 'blue', 'black', 'red', 'green', 'purple', 'grey', 'yellow', 'orange', 'pink', 'brown'
+	],
+	'{object}' : [
+		'a Magic: the Gathering card',
+		'a non-Magic: the Gathering trading card',
+		'a fruit',
+		'a vegetable',
+		'some dice',
+		'a pencil',
+		'a stapler',
+		'a calculator',
+		'a USB drive',
+		'some kind of hot beverage',
+		'a miniature',
+		'some kind of hot food',
+	],
+	'{direction}' : [
+		'north', 'south', 'east', 'west',
+		'northeast', 'northwest', 'southeast', 'southwest'
+	],
+	'{dice}' : [
+		'a d20', 'a d100', '4d6 and drops the lowest',
+		'a d6', 'a d12', 'a d8', 'a d10',
+	],
+}
 
 rules = [
 	'The player with the longest hair',
@@ -71,43 +71,42 @@ rules = [
 class RerollStartingRuleView(discord.ui.View):
 	@discord.ui.button(label='That rule is lame. Give me another one!', style=discord.ButtonStyle.blurple)
 	async def reroll(self, interaction: discord.Interaction, button: discord.ui.Button):
-		new_rule = get_random_starting_rule(interaction.user.display_name)
-		await interaction.response.edit_message(content=new_rule)
+		if not is_prank_time():
+			new_rule = get_random_starting_rule(interaction.user.display_name)
+			await interaction.response.edit_message(content=new_rule)
+		else:
+			new_rule = "I am displeased that you called my rules 'lame'.\n" \
+				f"I decree that any player except {interaction.user.display_name} may go first."
+			await interaction.response.edit_message(content=new_rule, view=None)
 
 
 def get_random_starting_rule(user):
-	base_rule = random.choice(rules)
-	base_rule += ' goes first!'
-	final_rule = None
-	if '{colour}' in base_rule:
-		random_colour = random.choice(colours)
-		final_rule = base_rule.replace('{colour}', random_colour)
-	elif '{object}' in base_rule:
-		random_object = random.choice(objects)
-		final_rule = base_rule.replace('{object}', random_object)
-	elif '{activity}' in base_rule:
-		random_activity = random.choice(activities)
-		final_rule = base_rule.replace('{activity}', random_activity)
-	elif '{dice}' in base_rule:
-		random_dice = random.choice(dice)
-		final_rule = base_rule.replace('{dice}', random_dice)
-	elif '{direction}' in base_rule:
-		random_direction = random.choice(directions)
-		final_rule = base_rule.replace('{direction}', random_direction)
-		final_rule += "\n*(If you're in Unigames, then the wall with the windows is north)*"
-	elif '{user}' in base_rule:
-		final_rule = base_rule.replace('{user}', user)
-	else:
-		final_rule = base_rule
+	rule = random.choice(rules)
+	rule += ' goes first!'
 
-	return final_rule
+	if '{direction}' in rule:
+		rule += "\n*(If you're in Unigames, then the wall with the windows is north)*"
+
+	if '{user}' in rule:
+		rule = rule.replace('{user}', user)
+
+	for field, options in fields.items():
+		if field in rule:
+			option = random.choice(options)
+			rule = rule.replace(field, option)
+
+	return rule
 
 
 @discord.app_commands.command(description="Get a random rule for seeing who goes first in your game!")
 async def starting_rule(interaction: discord.Interaction):
-	rule = get_random_starting_rule(interaction.user.display_name)
-	await interaction.response.send_message(f'Starting rule: {rule}', view=RerollStartingRuleView())
-
+	if not is_prank_time():
+		rule = get_random_starting_rule(interaction.user.display_name)
+		await interaction.response.send_message(f'Starting rule: {rule}', view=RerollStartingRuleView())
+	else:
+		image_embed = discord.Embed()
+		image_embed.set_image(url=there_are_no_rules())
+		await interaction.response.send_message(embed=image_embed)
 
 async def setup(bot):
 	bot.tree.add_command(starting_rule)

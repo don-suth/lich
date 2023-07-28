@@ -7,6 +7,8 @@ async def is_valid_keysmash(keysmash):
 	# We don't want to get too bogged down - max length is 200 - restricted to standard keyboard symbols only.
 	if len(keysmash) > 200:
 		return False
+	if len(keysmash) == 0:
+		return False
 	for char in keysmash:
 		if char not in string.printable:
 			return False
@@ -31,7 +33,7 @@ async def evauluate_keysmash(interaction: discord.Interaction, message: discord.
 		)
 	else:
 		await interaction.response.send_message(
-			"I can't evaluate that message, as it is either too long or contains non-standard symbols.",
+			"I can't evaluate that message, as it is either too long, too short, or contains non-standard symbols.",
 			ephemeral=True
 		)
 

@@ -85,7 +85,7 @@ STATUS_CHOICES = [
 
 async def change_status(discord_client):
 	while True:
-		activity = await get_random_status_choice()
+		activity = await get_random_status_choice(discord_client)
 		await discord_client.change_presence(activity=activity)
 		if LICH_DEBUG == 'FALSE':
 			await asyncio.sleep(60*20)
@@ -99,11 +99,11 @@ def check_for_special_status():
 	special_status = None
 	if LICH_DEBUG == 'TRUE':
 		# Test custom status?
-		special_status = ('custom', "Testing custom status?")
+		special_status = ('custom',	'Embarrassed with Babish', 1008040626723491871)
 	return special_status
 
 
-async def get_random_status_choice():
+async def get_random_status_choice(discord_client):
 	status = check_for_special_status()
 	if status is None:
 		status = random.choice(STATUS_CHOICES)
@@ -117,7 +117,12 @@ async def get_random_status_choice():
 			activity = discord.Activity(type=discord.ActivityType.listening, name=await evaluate_callable(activity_name))
 		case ('streaming', activity_name):
 			activity = discord.Streaming(name=await evaluate_callable(activity_name), url='twitch.tv/uwaunigames')
+		case ('custom', custom_status, emoji):
+			activity_name = await evaluate_callable(custom_status)
+			emoji = discord_client.get_emoji(emoji)
+			activity = discord.CustomActivity(name=activity_name, state=activity_name, emoji=emoji)
 		case ('custom', custom_status):
 			activity_name = await evaluate_callable(custom_status)
 			activity = discord.CustomActivity(name=activity_name, state=activity_name)
+
 	return activity

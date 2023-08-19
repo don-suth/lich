@@ -34,7 +34,7 @@ async def evaluate_callable(potential_callable):
 	# Helper function - if the argument is a callable it calls it and returns the result
 	# Otherwise it just returns the argument again
 	if callable(potential_callable):
-		return potential_callable()
+		return await potential_callable()
 	return potential_callable
 
 # Character limit  is about this V much:

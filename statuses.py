@@ -73,7 +73,7 @@ STATUS_CHOICES = [
 	('custom',			'Trying to pick a game to play'),
 	('custom',			'Seconding'),
 	('custom',			'Probably running an event'),
-	('custom',			'Embarrassed with Babish', 1008040626723491871),
+	('custom',			'Embarrassed with Babish'),  # Emoji ID: 1008040626723491871
 	('custom',			'Battling with Scryfall'),
 	('custom',			'Keen for Roleplay4Life'),
 	('custom',			'Drafting'),

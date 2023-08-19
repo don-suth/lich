@@ -37,6 +37,9 @@ async def evaluate_callable(potential_callable):
 		return potential_callable()
 	return potential_callable
 
+# Character limit  is about this V much:
+# Playing not Dungeons & Dragons |
+
 
 STATUS_CHOICES = [
 	('playing',         'with my new dice'),
@@ -64,6 +67,19 @@ STATUS_CHOICES = [
 	('listening to',    'the Tav noise'),
 	('listening to',	'a Committee meeting'),
 	('listening to',	'the Ultra Violets'),
+	('custom',			'Removing seconds'),
+	('custom',			'Amending the constitution'),
+	('custom',			'Not touching the money box'),
+	('custom',			'Trying to pick a game to play'),
+	('custom',			'Seconding'),
+	('custom',			'Probably running an event'),
+	('custom',			'Embarrassed with Babish', 1008040626723491871),
+	('custom',			'Battling with Scryfall'),
+	('custom',			'Keen for Roleplay4Life'),
+	('custom',			'Drafting'),
+	('custom',			'Making up starting rules'),
+	('custom',			'Vaporising traitors'),
+	('custom',			'Sipping on Vonk'),
 ]
 
 

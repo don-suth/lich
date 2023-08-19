@@ -39,7 +39,7 @@ async def evaluate_callable(potential_callable):
 
 # Character limit  is about this V much:
 # Playing not Dungeons & Dragons |
-
+# Running in DEBUG mode
 
 STATUS_CHOICES = [
 	('playing',         'with my new dice'),
@@ -80,6 +80,8 @@ STATUS_CHOICES = [
 	('custom',			'Making up starting rules'),
 	('custom',			'Vaporising traitors'),
 	('custom',			'Sipping on Vonk'),
+	('custom',			'Morbing'),
+	('custom',			'Trans rights!!'),
 ]
 
 
@@ -98,8 +100,8 @@ def check_for_special_status():
 	# and guarantee a certain status if those conditions are met.
 	special_status = None
 	if LICH_DEBUG == 'TRUE':
-		# Test custom status?
-		special_status = ('custom',	'Embarrassed with Babish', 1008040626723491871)
+		# Custom status for debug mode
+		special_status = ('custom', 'Running in DEBUG mode')
 	return special_status
 
 

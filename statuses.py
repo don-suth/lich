@@ -30,6 +30,14 @@ async def random_cardgame():
 	return json['name']
 
 
+async def evaluate_callable(potential_callable):
+	# Helper function - if the argument is a callable it calls it and returns the result
+	# Otherwise it just returns the argument again
+	if callable(potential_callable):
+		return potential_callable()
+	return potential_callable
+
+
 STATUS_CHOICES = [
 	('playing',         'with my new dice'),
 	('playing',         'a Paranoia one-shot'),
@@ -69,20 +77,31 @@ async def change_status(discord_client):
 			await asyncio.sleep(10)
 
 
-async def get_random_status_choice():
-	choice = random.choice(STATUS_CHOICES)
-	if callable(choice[1]):
-		activity_name = await choice[1]()
-	else:
-		activity_name = choice[1]
-	activity = None
-	if choice[0] == 'playing':
-		activity = discord.Game(activity_name)
-	if choice[0] == 'watching':
-		activity = discord.Activity(type=discord.ActivityType.watching, name=activity_name)
-	if choice[0] == 'listening to':
-		activity = discord.Activity(type=discord.ActivityType.listening, name=activity_name)
-	if choice[0] == 'streaming':
-		activity = discord.Streaming(name=activity_name, url='twitch.tv/uwaunigames')
-	return activity
+def check_for_special_status():
+	# This function will check for certain conditions,
+	# and guarantee a certain status if those conditions are met.
+	special_status = None
+	if LICH_DEBUG == 'TRUE':
+		# Test custom status?
+		special_status = ('custom', "Testing custom status?")
+	return special_status
 
+
+async def get_random_status_choice():
+	status = check_for_special_status()
+	if status is None:
+		status = random.choice(STATUS_CHOICES)
+	activity = None
+	match status:
+		case ('playing', activity_name):
+			activity = discord.Game(await evaluate_callable(activity_name))
+		case ('watching', activity_name):
+			activity = discord.Activity(type=discord.ActivityType.watching, name=await evaluate_callable(activity_name))
+		case ('listening to', activity_name):
+			activity = discord.Activity(type=discord.ActivityType.listening, name=await evaluate_callable(activity_name))
+		case ('streaming', activity_name):
+			activity = discord.Streaming(name=await evaluate_callable(activity_name), url='twitch.tv/uwaunigames')
+		case ('custom', custom_status):
+			activity_name = await evaluate_callable(custom_status)
+			activity = discord.CustomActivity(name=activity_name, state=activity_name)
+	return activity

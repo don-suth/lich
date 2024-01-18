@@ -5,6 +5,13 @@ import UIComponents
 UNIGAMES_CAMERAS = ['ipcamera6', 'ipcamera9', 'ipcamera10']
 PERTH_TIME = datetime.timezone(datetime.timedelta(hours=8))
 
+DONALD_ID = 243405584651517954
+
+
+def check_if_it_is_me(interaction: discord.Interaction):
+	return interaction.user.id == DONALD_ID
+
+
 class WebcamSwitcherView(discord.ui.View):
 	children: [UIComponents.EmbedPaginatorButton]
 
@@ -32,10 +39,14 @@ class JokeWebcamView(discord.ui.View):
 
 
 @discord.app_commands.command(description="Take a look at what's happening in the clubroom right now!")
+@discord.app_commands.guild_only()
 async def webcams(interaction: discord.Interaction):
 	switcher_view = WebcamSwitcherView()
 	camera_embed = switcher_view.get_current_embed()
 	await interaction.response.send_message(embed=camera_embed, view=switcher_view)
+
+
+
 
 
 async def setup(bot):

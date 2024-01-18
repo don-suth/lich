@@ -20,3 +20,7 @@ class InputBox(ui.Modal, title="Enter Webcam Password:"):
 @discord.app_commands.check(check_if_its_me)
 async def test_new_webcams(interaction: discord.Interaction):
 	await interaction.response.send_modal(InputBox())
+
+
+async def setup(bot):
+	bot.tree.add_command(test_new_webcams)

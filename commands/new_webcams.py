@@ -19,8 +19,9 @@ async def get_image(image_url, session, filename):
 	async with session.get(image_url) as response:
 		logger.info(response.status)
 		response_bytes = await response.read()
-	logger.info(response_bytes)
+	logger.error(response_bytes)
 	image_bytes.write(response_bytes)
+	image_bytes.seek(0)
 	discord_file = discord.File(image_bytes, filename=filename)
 	return discord_file
 

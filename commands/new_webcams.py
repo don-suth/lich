@@ -14,7 +14,9 @@ def check_if_its_me(interaction: discord.Interaction):
 async def get_image(image_url, session, filename):
 	image_bytes = BytesIO()
 	async with session.get(image_url) as response:
-		image_bytes.write(await response.read())
+		response_bytes = await response.read()
+	print(response_bytes)
+	image_bytes.write(response_bytes)
 	discord_file = discord.File(image_bytes, filename=filename)
 	return discord_file
 
@@ -31,7 +33,7 @@ class InputBox(ui.Modal, title="Enter Webcam Password:"):
 				test_image = await get_image(image_url="https://preview.redd.it/5l9c34dl57q21.png", session=session, filename="voja.png")
 			embed = discord.Embed(title="Voja")
 			embed.set_image(url="attachment://voja.png")
-			await interaction.followup.send(embed=embed, files=[test_image])
+			await interaction.followup.send(embed=embed, file=test_image)
 
 
 @discord.app_commands.command(description="Testing the new webcam commands.")

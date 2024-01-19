@@ -34,7 +34,7 @@ class InputBox(ui.Modal, title="Enter Webcam Password:"):
 		else:
 			await interaction.response.defer(ephemeral=False, thinking=True)
 			async with ClientSession() as session:
-				test_image = await get_image(image_url="https://preview.redd.it/5l9c34dl57q21.png", session=session, filename="voja.png")
+				test_image = await get_image(image_url="https://i.redd.it/5l9c34dl57q21.png", session=session, filename="voja.png")
 			embed = discord.Embed(title="Voja")
 			embed.set_image(url="attachment://voja.png")
 			await interaction.followup.send(embed=embed, file=test_image)

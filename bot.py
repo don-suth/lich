@@ -11,6 +11,7 @@ LICH_DEBUG = os.environ.get("LICH_DEBUG", "FALSE")
 
 
 log_handler = logging.StreamHandler()
+log_handler.setLevel(logging.NOTSET)
 
 
 guilds = []

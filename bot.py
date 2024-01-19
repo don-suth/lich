@@ -4,9 +4,13 @@ from statuses import change_status
 import asyncio
 from get_docker_secret import get_docker_secret
 import os
+import logging
 
 
 LICH_DEBUG = os.environ.get("LICH_DEBUG", "FALSE")
+
+
+log_handler = logging.StreamHandler()
 
 
 guilds = []
@@ -63,4 +67,4 @@ if __name__ == "__main__":
 	except (TypeError, ValueError):
 		with open('secret', 'r') as f:
 			secret = f.read()
-	client.run(secret)
+	client.run(secret, log_handler=log_handler)

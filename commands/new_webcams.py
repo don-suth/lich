@@ -1,5 +1,6 @@
 import discord
 from discord import ui, Interaction
+import asyncio
 
 
 DONALD_ID = 243405584651517954
@@ -13,7 +14,10 @@ class InputBox(ui.Modal, title="Enter Webcam Password:"):
 	password = ui.TextInput(label="Webcam Password", style=discord.TextStyle.short)
 
 	async def on_submit(self, interaction: Interaction) -> None:
-		await interaction.response.send_message(f"The password you entered was {self.password}", ephemeral=True)
+		await interaction.response.defer(ephemeral=False, thinking=True)
+		await asyncio.sleep(5)
+		await interaction.followup.edit_message(f"Success! The password was {self.password}")
+
 
 @discord.app_commands.command(description="Testing the new webcam commands.")
 @discord.app_commands.guild_only()

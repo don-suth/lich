@@ -10,8 +10,9 @@ import logging
 LICH_DEBUG = os.environ.get("LICH_DEBUG", "FALSE")
 
 
-log_handler = logging.StreamHandler()
-log_handler.setLevel(logging.NOTSET)
+logger = logging.getLogger("discord")
+logger.setLevel(logging.NOTSET)
+logger.addHandler(logging.StreamHandler())
 
 
 guilds = []
@@ -68,4 +69,4 @@ if __name__ == "__main__":
 	except (TypeError, ValueError):
 		with open('secret', 'r') as f:
 			secret = f.read()
-	client.run(secret, log_handler=log_handler)
+	client.run(secret, log_handler=None)

@@ -5,7 +5,7 @@ from io import BytesIO
 
 import logging
 
-logger = logging.getLogger()
+logger = logging.getLogger("discord")
 
 DONALD_ID = 243405584651517954
 

@@ -23,7 +23,7 @@ class InputBox(ui.Modal, title="Enter Webcam Password:"):
 	password = ui.TextInput(label="Webcam Password", style=discord.TextStyle.short)
 
 	async def on_submit(self, interaction: Interaction) -> None:
-		if self.password != "supersecret":
+		if str(self.password) != "supersecret":
 			await interaction.response.send_message("Sorry, the password you entered was incorrect.", ephemeral=True)
 		else:
 			await interaction.response.defer(ephemeral=False, thinking=True)

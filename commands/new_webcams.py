@@ -64,9 +64,17 @@ class InputModal(ui.Modal, title="Enter Webcam Password:"):
 						discord_files_tasks.append(tg.create_task(get_image(image_url=TEST_IMAGES[i], session=session, filename=f"{i}.png")))
 			resulting_files = tuple(map(lambda t: t.result(), discord_files_tasks))
 
-			switcher_view = WebcamSwitcherView(files=resulting_files)
-			card_embed = switcher_view.get_current_embed()
-			await interaction.followup.send(embed=card_embed, files=resulting_files, view=switcher_view)
+			embeds = []
+			for file in resulting_files:
+				embed = discord.Embed()
+				embed.set_image(url=f"attachment://{file.filename}")
+				embeds.append(embed)
+			await interaction.followup.send(embeds=embeds, files=resulting_files)
+
+
+#			switcher_view = WebcamSwitcherView(files=resulting_files)
+#			card_embed = switcher_view.get_current_embed()
+#			await interaction.followup.send(embed=card_embed, files=resulting_files, view=switcher_view)
 
 
 @discord.app_commands.command(description="Testing the new webcam commands.")

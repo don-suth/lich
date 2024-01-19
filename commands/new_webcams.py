@@ -3,6 +3,9 @@ from discord import ui, Interaction
 from aiohttp import ClientSession
 from io import BytesIO
 
+import logging
+
+logger = logging.getLogger()
 
 DONALD_ID = 243405584651517954
 
@@ -14,8 +17,9 @@ def check_if_its_me(interaction: discord.Interaction):
 async def get_image(image_url, session, filename):
 	image_bytes = BytesIO()
 	async with session.get(image_url) as response:
+		logger.debug(response.status)
 		response_bytes = await response.read()
-	print(response_bytes)
+	logger.debug(response_bytes)
 	image_bytes.write(response_bytes)
 	discord_file = discord.File(image_bytes, filename=filename)
 	return discord_file

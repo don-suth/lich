@@ -16,7 +16,7 @@ class InputBox(ui.Modal, title="Enter Webcam Password:"):
 	async def on_submit(self, interaction: Interaction) -> None:
 		await interaction.response.defer(ephemeral=False, thinking=True)
 		await asyncio.sleep(5)
-		await interaction.followup.edit_message(f"Success! The password was {self.password}")
+		await interaction.followup.send(f"Success! The password was {self.password}")
 
 
 @discord.app_commands.command(description="Testing the new webcam commands.")

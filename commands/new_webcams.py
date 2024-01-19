@@ -66,7 +66,7 @@ class InputModal(ui.Modal, title="Enter Webcam Password:"):
 
 			embeds = []
 			for file in resulting_files:
-				embed = discord.Embed()
+				embed = discord.Embed(url="unigames.asn.au")
 				embed.set_image(url=f"attachment://{file.filename}")
 				embeds.append(embed)
 			await interaction.followup.send(embeds=embeds, files=resulting_files)

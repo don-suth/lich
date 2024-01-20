@@ -10,6 +10,12 @@ import datetime
 
 DONALD_ID = 243405584651517954
 PERTH_TIME = datetime.timezone(datetime.timedelta(hours=8))
+WEBCAM_CONFIRM_MESSAGE = """The Webcams now require a password to view.
+Eventually, you will be able to link your Discord account to your Unigames account to bypass this check.
+However, until then, you will need to enter the *shared* password for the webcams.
+
+**Please do not enter your Discord password or your UCC account password.**"""
+
 TEST_IMAGES = (
 	"https://cards.scryfall.io/normal/front/0/6/06d4fbe1-8a2f-4958-bb85-1a1e5f1e8d87.jpg?1562202321",
 	"https://cards.scryfall.io/normal/front/c/7/c7167648-7ef3-4e2e-ad32-72e8bcfa4b9f.jpg?1640736597",
@@ -31,32 +37,29 @@ async def get_image(image_url, session, filename):
 	return discord_file
 
 
-class WebcamSwitcherView(discord.ui.View):
-	children: [UIComponents.EmbedPaginatorButton]
-
-	def __init__(self, *args, files, **kwargs):
+class WebcamConfirmView(discord.ui.View):
+	def __init__(self, *args, followup, **kwargs):
 		super().__init__(*args, **kwargs)
-		time_now = datetime.datetime.now(PERTH_TIME)
-		time_string = time_now.strftime("Unigames @ %d/%m/%Y %H:%M")
-		for i in range(len(files)):
-			card = files[i]
-			card_embed = discord.Embed(title=time_string)
-			card_embed.set_image(url=f"attachment://{card.filename}")
-			self.add_item(UIComponents.EmbedPaginatorButton(label=str(i + 1), embed=card_embed, starting=(i == 0)))
-		self.current_camera = 0
+		self.followup = followup
 
-	def get_current_embed(self):
-		return self.children[self.current_camera].embed
+	@discord.ui.button(label="Enter Shared Password", style=discord.ButtonStyle.green)
+	async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
+		await interaction.response.send_modal(PasswordInputModal(followup=self.followup))
+		self.stop()
 
 
-class InputModal(ui.Modal, title="Enter Webcam Password:"):
-	password = ui.TextInput(label="Webcam Password", style=discord.TextStyle.short)
+class PasswordInputModal(ui.Modal, title="Please enter the Shared Webcam Password:"):
+	password = ui.TextInput(label="Shared Webcam Password:", style=discord.TextStyle.short, placeholder="DO NOT ENTER YOUR PERSONAL PASSWORDS", required=True)
+
+	def __init__(self, *args, followup, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.followup = followup
 
 	async def on_submit(self, interaction: Interaction) -> None:
 		if str(self.password) != "supersecret":
-			await interaction.response.send_message("Sorry, the password you entered was incorrect.", ephemeral=True)
+			await asyncio.sleep(4)
+			await self.followup.send("Sorry, the password you entered was incorrect.", ephemeral=True)
 		else:
-			await interaction.response.defer(ephemeral=False, thinking=True)
 			async with ClientSession() as session:
 				async with asyncio.TaskGroup() as tg:
 					discord_files_tasks = []
@@ -64,12 +67,7 @@ class InputModal(ui.Modal, title="Enter Webcam Password:"):
 						discord_files_tasks.append(tg.create_task(get_image(image_url=TEST_IMAGES[i], session=session, filename=f"{i}.png")))
 			resulting_files = tuple(map(lambda t: t.result(), discord_files_tasks))
 
-			embeds = []
-			for file in resulting_files:
-				embed = discord.Embed(url="https://unigames.asn.au")
-				embed.set_image(url=f"attachment://{file.filename}")
-				embeds.append(embed)
-			await interaction.followup.send(embeds=embeds, files=resulting_files)
+			await self.followup.send(content="Testing", files=resulting_files, ephemeral=False)
 
 
 #			switcher_view = WebcamSwitcherView(files=resulting_files)
@@ -81,7 +79,8 @@ class InputModal(ui.Modal, title="Enter Webcam Password:"):
 @discord.app_commands.guild_only()
 @discord.app_commands.check(check_if_its_me)
 async def test_new_webcams(interaction: discord.Interaction):
-	await interaction.response.send_modal(InputModal())
+	await interaction.response.send_modal(PasswordInputModal(followup=interaction.followup))
+
 
 
 async def setup(bot):

@@ -75,7 +75,7 @@ class PasswordInputModal(ui.Modal, title="Please enter the Shared Webcam Passwor
 						headers = {"Authorization": f"Basic {code}"}
 						discord_files_tasks.append(tg.create_task(get_image(image_url=webcam_url, session=session, filename=f"{camera}.jpeg", headers=headers)))
 			resulting_files = tuple(map(lambda t: t.result(), discord_files_tasks))
-		except PermissionError:
+		except* PermissionError:
 			await interaction.response.send_message(content="Sorry, the password you entered didn't seem to work.", ephemeral=True)
 		else:
 			await interaction.response.defer(thinking=False, ephemeral=True)

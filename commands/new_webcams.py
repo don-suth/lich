@@ -32,7 +32,7 @@ async def get_image(image_url, session, filename, headers):
 	image_bytes = BytesIO()
 	async with session.get(image_url, headers=headers) as response:
 		if response.status != 200:
-			raise Exception
+			raise PermissionError
 		response_bytes = await response.read()
 	image_bytes.write(response_bytes)
 	image_bytes.seek(0)
@@ -80,7 +80,7 @@ class PasswordInputModal(ui.Modal, title="Please enter the Shared Webcam Passwor
 						headers = {"Authorization": f"Basic {code}"}
 						discord_files_tasks.append(tg.create_task(get_image(image_url=webcam_url, session=session, filename=f"{camera}.jpeg", headers=headers)))
 			resulting_files = tuple(map(lambda t: t.result(), discord_files_tasks))
-		except Exception as e:
+		except PermissionError:
 			await interaction.response.send_message(content="Sorry, the password you entered didn't seem to work.", ephemeral=True)
 		else:
 			await interaction.response.defer(thinking=False, ephemeral=True)
@@ -92,7 +92,6 @@ class PasswordInputModal(ui.Modal, title="Please enter the Shared Webcam Passwor
 @discord.app_commands.check(check_if_its_me)
 async def test_new_webcams(interaction: discord.Interaction):
 	await interaction.response.send_modal(PasswordInputModal(followup=interaction.followup))
-
 
 
 async def setup(bot):

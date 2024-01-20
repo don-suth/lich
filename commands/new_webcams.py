@@ -67,6 +67,7 @@ class PasswordInputModal(ui.Modal, title="Please enter the Shared Webcam Passwor
 						discord_files_tasks.append(tg.create_task(get_image(image_url=TEST_IMAGES[i], session=session, filename=f"{i}.png")))
 			resulting_files = tuple(map(lambda t: t.result(), discord_files_tasks))
 
+			await interaction.response.defer(thinking=False, ephemeral=True)
 			await self.followup.send(content="Testing", files=resulting_files, ephemeral=False)
 
 

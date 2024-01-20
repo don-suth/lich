@@ -8,7 +8,6 @@ import datetime
 import base64
 
 
-DONALD_ID = 243405584651517954
 UNIGAMES_CAMERAS = ['ipcamera6', 'ipcamera9', 'ipcamera10']
 PERTH_TIME = datetime.timezone(datetime.timedelta(hours=8))
 WEBCAM_CONFIRM_MESSAGE = """The Webcams now require a password to view.
@@ -22,10 +21,6 @@ TEST_IMAGES = (
 	"https://cards.scryfall.io/normal/front/c/7/c7167648-7ef3-4e2e-ad32-72e8bcfa4b9f.jpg?1640736597",
 	"https://cards.scryfall.io/normal/front/5/9/59faa45d-868b-4bc7-934c-0e077642e129.jpg?1674420209",
 )
-
-
-def check_if_its_me(interaction: discord.Interaction):
-	return interaction.user.id == DONALD_ID
 
 
 async def get_image(image_url, session, filename, headers):
@@ -87,12 +82,11 @@ class PasswordInputModal(ui.Modal, title="Please enter the Shared Webcam Passwor
 			await self.followup.send(content=time_string, files=resulting_files, ephemeral=False)
 
 
-@discord.app_commands.command(description="Testing the new webcam commands.")
+@discord.app_commands.command(description="Password Required: Take a look at what's happening in the clubroom right now!")
 @discord.app_commands.guild_only()
-@discord.app_commands.check(check_if_its_me)
-async def test_new_webcams(interaction: discord.Interaction):
+async def webcams(interaction: discord.Interaction):
 	await interaction.response.send_modal(PasswordInputModal(followup=interaction.followup))
 
 
 async def setup(bot):
-	bot.tree.add_command(test_new_webcams)
+	bot.tree.add_command(webcams)

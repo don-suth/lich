@@ -4,11 +4,12 @@ import discord
 from discord import ui, Interaction
 from aiohttp import ClientSession
 from io import BytesIO
-import UIComponents
 import datetime
+import base64
 
 
 DONALD_ID = 243405584651517954
+UNIGAMES_CAMERAS = ['ipcamera6', 'ipcamera9', 'ipcamera10']
 PERTH_TIME = datetime.timezone(datetime.timedelta(hours=8))
 WEBCAM_CONFIRM_MESSAGE = """The Webcams now require a password to view.
 Eventually, you will be able to link your Discord account to your Unigames account to bypass this check.
@@ -27,14 +28,22 @@ def check_if_its_me(interaction: discord.Interaction):
 	return interaction.user.id == DONALD_ID
 
 
-async def get_image(image_url, session, filename):
+async def get_image(image_url, session, filename, headers):
 	image_bytes = BytesIO()
-	async with session.get(image_url) as response:
+	async with session.get(image_url, headers=headers) as response:
+		if response.status != 200:
+			raise Exception
 		response_bytes = await response.read()
 	image_bytes.write(response_bytes)
 	image_bytes.seek(0)
 	discord_file = discord.File(image_bytes, filename=filename)
 	return discord_file
+
+
+def tob64(code):
+	code_bytes = code.encode("ascii")
+	b64_bytes = base64.b64encode(code_bytes)
+	return b64_bytes.decode("ascii")
 
 
 class WebcamConfirmView(discord.ui.View):
@@ -56,24 +65,27 @@ class PasswordInputModal(ui.Modal, title="Please enter the Shared Webcam Passwor
 		self.followup = followup
 
 	async def on_submit(self, interaction: Interaction) -> None:
-		if str(self.password) != "supersecret":
-			await asyncio.sleep(4)
-			await self.followup.send("Sorry, the password you entered was incorrect.", ephemeral=True)
-		else:
+		time_now = datetime.datetime.now(PERTH_TIME)
+		time_string = time_now.strftime("Unigames @ %d/%m/%Y %H:%M")
+		time_code = time_now.strftime("%Y%m%d-%H%M")
+
+		code = tob64(f"ucc:{self.password}")
+
+		try:
 			async with ClientSession() as session:
 				async with asyncio.TaskGroup() as tg:
 					discord_files_tasks = []
-					for i in range(len(TEST_IMAGES)):
-						discord_files_tasks.append(tg.create_task(get_image(image_url=TEST_IMAGES[i], session=session, filename=f"{i}.png")))
+					for camera in UNIGAMES_CAMERAS:
+						webcam_url = f"https://webcam.ucc.asn.au/archive.php?camera={camera}&timestamp={time_code}"
+						print(f"getting {camera}. {code=}")
+						headers = {"Authorization": f"Basic {code}"}
+						discord_files_tasks.append(tg.create_task(get_image(image_url=webcam_url, session=session, filename=f"{camera}.jpeg", headers=headers)))
 			resulting_files = tuple(map(lambda t: t.result(), discord_files_tasks))
-
+		except Exception as e:
+			await interaction.response.send_message(content="Sorry, the password you entered didn't seem to work.", ephemeral=True)
+		else:
 			await interaction.response.defer(thinking=False, ephemeral=True)
-			await self.followup.send(content="Testing", files=resulting_files, ephemeral=False)
-
-
-#			switcher_view = WebcamSwitcherView(files=resulting_files)
-#			card_embed = switcher_view.get_current_embed()
-#			await interaction.followup.send(embed=card_embed, files=resulting_files, view=switcher_view)
+			await self.followup.send(content=time_string, files=resulting_files, ephemeral=False)
 
 
 @discord.app_commands.command(description="Testing the new webcam commands.")

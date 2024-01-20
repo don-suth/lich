@@ -77,7 +77,6 @@ class PasswordInputModal(ui.Modal, title="Please enter the Shared Webcam Passwor
 					discord_files_tasks = []
 					for camera in UNIGAMES_CAMERAS:
 						webcam_url = f"https://webcam.ucc.asn.au/archive.php?camera={camera}&timestamp={time_code}"
-						print(f"getting {camera}. {code=}")
 						headers = {"Authorization": f"Basic {code}"}
 						discord_files_tasks.append(tg.create_task(get_image(image_url=webcam_url, session=session, filename=f"{camera}.jpeg", headers=headers)))
 			resulting_files = tuple(map(lambda t: t.result(), discord_files_tasks))

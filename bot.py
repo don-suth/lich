@@ -34,7 +34,7 @@ class LichClient(commands.Bot):
 		super().__init__(command_prefix="this_will_never_trigger", intents=starting_intents)
 		self.default_extensions = \
 			['commands.startingrules', 'commands.dice', 'commands.warriorcat', 'commands.flavour',
-				'commands.gavin', 'commands.library_items', 'commands.keysmash', 'commands.new_webcams']
+				'commands.gavin', 'commands.library_items', 'commands.keysmash', 'commands.webcams']
 		if LICH_DEBUG == "TRUE":
 			self.default_extensions.append('commands.test')
 

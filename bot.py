@@ -26,6 +26,8 @@ except (TypeError, ValueError):
 		for line in guild_file.readlines():
 			guilds.append(discord.Object(id=line.rstrip('\n')))
 
+controller_guild = discord.Object(id="842784899916365854")
+
 
 class LichClient(commands.Bot):
 	def __init__(self):
@@ -52,6 +54,14 @@ class LichClient(commands.Bot):
 				await self.tree.sync(guild=guild)
 			except discord.errors.Forbidden:
 				pass
+		await self.load_extension("commands.relay")
+		try:
+			self.tree.copy_global_to(guild=controller_guild)
+			await self.tree.sync(guild=controller_guild)
+			print("Done setup")
+		except discord.errors.Forbidden:
+			pass
+
 
 	async def on_ready(self):
 		print(f'Logged in as {client.user} (ID: {client.user.id})')

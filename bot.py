@@ -75,7 +75,7 @@ client = LichClient()
 
 if __name__ == "__main__":
 	try:
-		secret = get_docker_secret('discord_bot_secret', safe=False)
+		secret = get_docker_secret('discord_bot_token', safe=False)
 	except (TypeError, ValueError):
 		with open('secret', 'r') as f:
 			secret = f.read()

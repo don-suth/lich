@@ -2,6 +2,8 @@ import asyncio
 from aiohttp import ClientSession
 import re
 import discord
+from discord import app_commands
+from discord.ext import commands, tasks
 
 
 def format_flavour_text(raw_flavour):
@@ -32,37 +34,38 @@ async def get_random_flavour():
 		return None
 
 
-class FlavourGetter:
-	def __init__(self):
+class RandomFlavourCog(commands.Cog):
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
 		self.random_card_queue = asyncio.Queue(maxsize=10)
-		self.random_card_task = None
 
+	@tasks.loop(seconds=10)
 	async def fill_random_card_cache(self):
-		while True:
-			while not self.random_card_queue.full():
-				flavour_text = await get_random_flavour()
-				if flavour_text is not None:
-					await self.random_card_queue.put(flavour_text)
-					print("Put flavour text in queue:", flavour_text, f"[{self.random_card_queue.qsize()}]")
-					await asyncio.sleep(0.1)
-			await asyncio.sleep(10)
+		while not self.random_card_queue.full():
+			flavour_text = await get_random_flavour()
+			if flavour_text is not None:
+				await self.random_card_queue.put(flavour_text)
+				print("Put flavour text in queue:", flavour_text, f"[{self.random_card_queue.qsize()}]")
+				await asyncio.sleep(0.1)
 
-	async def pull_random_flavour(self):
+	@app_commands.command(
+		name="flavour",
+		description="Returns a random flavour text from MtG. See if you can guess the card!"
+	)
+	async def return_flavour(self, interaction: discord.Interaction):
 		flavour_text = await self.random_card_queue.get()
-		return flavour_text
-
-
-
-
-async def setup(bot):
-	flavour_getter = FlavourGetter()
-
-	@discord.app_commands.command(name="flavour", description="Returns a random flavour text from Magic the Gathering. See if you can guess the card!")
-	async def return_flavour(interaction: discord.Interaction):
-		flavour_text = await flavour_getter.pull_random_flavour()
 		await interaction.response.send_message(flavour_text)
 
-	if flavour_getter.random_card_task is None:
-		print('Populating flavour text cache:')
-		flavour_getter.random_card_task = asyncio.create_task(flavour_getter.fill_random_card_cache())
-	bot.tree.add_command(return_flavour)
+	async def cog_load(self):
+		print(f"\t - {self.__class__.__name__} loaded")
+		self.fill_random_card_cache.start()
+		print(f"\t\t - Task 'fill_random_card_cache' started")
+
+	async def cog_unload(self):
+		print(f"\t - {self.__class__.__name__} unloaded")
+		self.fill_random_card_cache.stop()
+		print(f"\t\t - Task 'fill_random_card_cache' stopped")
+
+
+async def setup(bot: commands.Bot):
+	await bot.add_cog(RandomFlavourCog(bot=bot))

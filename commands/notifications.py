@@ -8,7 +8,7 @@ import redis.asyncio as redis
 class NotificationsCog(commands.Cog):
 	def __init__(self, bot: commands.Bot):
 		self.bot = bot
-		self.redis = redis.Redis(host="localhost", port=6379, protocol=3, decode_responses=True)
+		self.redis = None
 
 	@app_commands.default_permissions()
 	@app_commands.command(description="Add this channel to the list of channels to be pinged")
@@ -16,6 +16,15 @@ class NotificationsCog(commands.Cog):
 		await self.redis.sadd("discord:notifications:channels", interaction.channel_id)
 		await interaction.response.send_message(
 			"This channel has been setup to receive notifications.",
+			ephemeral=True
+		)
+
+	@app_commands.default_permissions()
+	@app_commands.command(description="Remove this channel from the list of channels to be pinged")
+	async def remove_notifications(self, interaction: discord.Interaction):
+		await self.redis.srem("discord:notifications:channels", interaction.channel_id)
+		await interaction.response.send_message(
+			"This channel won't receive notifications.",
 			ephemeral=True
 		)
 
@@ -30,9 +39,11 @@ class NotificationsCog(commands.Cog):
 		)
 
 	async def cog_load(self):
+		self.redis = await redis.Redis(host="localhost", port=6379, protocol=3, decode_responses=True)
 		print(f"\t - {self.__class__.__name__} loaded")
 
 	async def cog_unload(self):
+		await self.redis.close()
 		print(f"\t - {self.__class__.__name__} unloaded")
 
 

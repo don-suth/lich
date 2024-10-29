@@ -34,9 +34,14 @@ class LichClient(commands.Bot):
 		starting_intents = discord.Intents.default()
 		starting_intents.typing = False
 		super().__init__(command_prefix="this_will_never_trigger", intents=starting_intents)
-		self.default_extensions = \
-			['commands.startingrules', 'commands.dice', 'commands.warriorcat', 'commands.flavour',
-				'commands.gavin', 'commands.library_items', 'commands.keysmash', 'commands.webcams']
+		self.default_extensions = [
+			"commands.startingrules", "commands.dice", "commands.warriorcat",
+			"commands.flavour", "commands.gavin", "commands.library_items",
+			"commands.keysmash", "commands.webcams"
+		]
+		self.controller_extensions = [
+			"commands.relay",
+		]
 		if LICH_DEBUG == "TRUE":
 			self.default_extensions.append('commands.test')
 
@@ -53,15 +58,16 @@ class LichClient(commands.Bot):
 				self.tree.copy_global_to(guild=guild)
 				await self.tree.sync(guild=guild)
 			except discord.errors.Forbidden:
-				pass
-		await self.load_extension("commands.relay")
+				print("Forbidden Error whilst copying default extensions")
+		
+		for controller_extension in self.controller_extensions:
+			await self.load_extension(controller_extension)
 		try:
 			self.tree.copy_global_to(guild=controller_guild)
 			await self.tree.sync(guild=controller_guild)
-			print("Done setup")
 		except discord.errors.Forbidden:
-			pass
-
+			print("Forbidden Error whilst copying controller extensions")
+		print("Done Setup")
 
 	async def on_ready(self):
 		print(f'Logged in as {client.user} (ID: {client.user.id})')

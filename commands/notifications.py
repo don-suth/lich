@@ -35,7 +35,8 @@ class NotificationsCog(commands.Cog):
 			while True:
 				message = await pubsub.get_message(ignore_subscribe_messages=True, timeout=None)
 				if message is not None:
-					print(message)
+					async for channel_id in self.redis.sscan_iter("discord:notifications:channels"):
+						await self.bot.get_channel(int(channel_id)).send(message.get("data"))
 
 	async def cog_load(self):
 		self.redis = await redis.Redis(host="localhost", port=6379, decode_responses=True)

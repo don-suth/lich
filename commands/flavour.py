@@ -35,8 +35,8 @@ async def get_random_flavour():
 
 
 class RandomFlavourCog(commands.Cog):
-	def __init__(self, *args, **kwargs):
-		super().__init__(*args, **kwargs)
+	def __init__(self, bot: commands.Bot):
+		self.bot = bot
 		self.random_card_queue = asyncio.Queue(maxsize=10)
 
 	@tasks.loop(seconds=10)

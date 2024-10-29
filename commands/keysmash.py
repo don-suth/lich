@@ -18,7 +18,13 @@ async def is_valid_keysmash(keysmash):
 
 
 class KeysmashCog(commands.Cog):
-	@app_commands.context_menu(name="Evaluate Keysmash")
+	def __init__(self, bot: commands.Bot):
+		self.bot = bot
+		self.context_menu = app_commands.ContextMenu(
+			name="Evaluate Keysmash",
+			callback=self.evaluate_keysmash,
+		)
+
 	async def evaluate_keysmash(self, interaction: discord.Interaction, message: discord.Message):
 		# Evaluates a string and estimates how long it would take to crack it if you used it as your password.
 		# This uses a long JS function converted into python. See password_calculator.py for more info.
@@ -41,9 +47,11 @@ class KeysmashCog(commands.Cog):
 			)
 
 	async def cog_load(self):
+		self.bot.tree.add_command(self.context_menu)
 		print(f"\t - {self.__class__.__name__} loaded")
 
 	async def cog_unload(self):
+		self.bot.tree.remove_command(self.context_menu.name, type=self.context_menu.type)
 		print(f"\t - {self.__class__.__name__} unloaded")
 
 

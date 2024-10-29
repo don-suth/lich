@@ -1,6 +1,8 @@
 from aiohttp import ClientSession
-import discord
 import os
+import discord
+from discord import app_commands
+from discord.ext import commands
 
 
 API_ACCESS = os.environ.get('API_ACCESS', 'http://127.0.0.1:8000/api')
@@ -65,32 +67,32 @@ def item_embed_from_json(json) -> discord.Embed:
 	return item_embed
 
 
-class RandomGroup(discord.app_commands.Group):
-	@discord.app_commands.command(name="item", description="Get a random item from the Unigames library!")
+class RandomCog(commands.GroupCog, group_name="random"):
+	@app_commands.command(name="item", description="Get a random item from the Unigames library!")
 	async def random_item(self, interaction: discord.Interaction):
 		async with ClientSession() as session:
 			response = await session.request(
 				method="GET",
-				url=API_ACCESS+"/items/random/any",
+				url=API_ACCESS + "/items/random/any",
 				timeout=20.0
 			)
 			json = await response.json()
 			embed = item_embed_from_json(json)
 			await interaction.response.send_message(embed=embed)
 
-	@discord.app_commands.command(name="book", description="Get a random Book from the Unigames library!!")
+	@app_commands.command(name="book", description="Get a random Book from the Unigames library!!")
 	async def random_book(self, interaction: discord.Interaction):
 		async with ClientSession() as session:
 			response = await session.request(
 				method="GET",
-				url=API_ACCESS+"/items/random/book",
+				url=API_ACCESS + "/items/random/book",
 				timeout=20.0
 			)
 			json = await response.json()
 			embed = item_embed_from_json(json)
 			await interaction.response.send_message(embed=embed)
 
-	@discord.app_commands.command(name="boardgame", description="Get a random Book from the Unigames library!!")
+	@app_commands.command(name="boardgame", description="Get a random Book from the Unigames library!!")
 	async def random_boardgame(self, interaction: discord.Interaction):
 		async with ClientSession() as session:
 			response = await session.request(
@@ -102,7 +104,7 @@ class RandomGroup(discord.app_commands.Group):
 			embed = item_embed_from_json(json)
 			await interaction.response.send_message(embed=embed)
 
-	@discord.app_commands.command(name="cardgame", description="Get a random Book from the Unigames library!!")
+	@app_commands.command(name="cardgame", description="Get a random Book from the Unigames library!!")
 	async def random_cardgame(self, interaction: discord.Interaction):
 		async with ClientSession() as session:
 			response = await session.request(
@@ -114,6 +116,12 @@ class RandomGroup(discord.app_commands.Group):
 			embed = item_embed_from_json(json)
 			await interaction.response.send_message(embed=embed)
 
+	async def cog_load(self):
+		print(f"\t - {self.__class__.__name__} loaded")
 
-async def setup(bot):
-	bot.tree.add_command(RandomGroup(name="random"))
+	async def cog_unload(self):
+		print(f"\t - {self.__class__.__name__} unloaded")
+
+
+async def setup(bot: commands.Bot):
+	await bot.add_cog(RandomCog(bot=bot))

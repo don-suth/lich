@@ -40,7 +40,7 @@ class LichClient(commands.Bot):
 			"commands.keysmash", "commands.webcams"
 		]
 		self.controller_extensions = [
-			"commands.relay",
+			"commands.relay", "commands.notifications"
 		]
 		if LICH_DEBUG == "TRUE":
 			self.default_extensions.append('commands.test')

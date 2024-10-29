@@ -1,4 +1,6 @@
 import discord
+from discord import app_commands
+from discord.ext import commands
 import d20
 
 
@@ -42,15 +44,24 @@ async def get_help():
 	return help_text
 
 
-@discord.app_commands.command(description="Roll some dice! See syntax by using 'help' as your expression.")
-async def roll(interaction: discord.Interaction, expression: str):
-	if expression.lower() == 'help':
-		dice_result = await get_help()
-		error = True
-	else:
-		dice_result, error = await roll_dice(expression)
-	await interaction.response.send_message(dice_result, ephemeral=error)
+class DiceCog(commands.Cog):
+	@app_commands.command(
+		description="Roll some dice! See syntax by using 'help' as your expression."
+	)
+	async def roll(self, interaction: discord.Interaction, expression: str):
+		if expression.lower() == 'help':
+			dice_result = await get_help()
+			error = True
+		else:
+			dice_result, error = await roll_dice(expression)
+		await interaction.response.send_message(dice_result, ephemeral=error)
+
+	async def cog_load(self):
+		print(f"\t - {self.__class__.__name__} loaded")
+
+	async def cog_unload(self):
+		print(f"\t - {self.__class__.__name__} unloaded")
 
 
-async def setup(bot):
-	bot.tree.add_command(roll)
+async def setup(bot: commands.Bot):
+	await bot.add_cog(DiceCog(bot=bot))

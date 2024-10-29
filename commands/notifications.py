@@ -1,7 +1,7 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-import redis
+import redis.asyncio as redis
 
 
 @app_commands.guild_only()
@@ -13,7 +13,7 @@ class NotificationsCog(commands.Cog):
 	@app_commands.default_permissions()
 	@app_commands.command(description="Add this channel to the list of channels to be pinged")
 	async def setup_notifications(self, interaction: discord.Interaction):
-		self.redis.sadd("discord:notifications:channels", interaction.channel_id)
+		await self.redis.sadd("discord:notifications:channels", interaction.channel_id)
 		await interaction.response.send_message(
 			"This channel has been setup to receive notifications.",
 			ephemeral=True
@@ -22,8 +22,7 @@ class NotificationsCog(commands.Cog):
 	@app_commands.default_permissions()
 	@app_commands.command(description="Send a message to all notification channels")
 	async def send_notification(self, interaction: discord.Interaction):
-		for channel_id in self.redis.sscan_iter("discord:notifications:channels"):
-			print(type(channel_id), channel_id)
+		async for channel_id in self.redis.sscan_iter("discord:notifications:channels"):
 			await self.bot.get_channel(int(channel_id)).send("Hello!")
 		await interaction.response.send_message(
 			"Sent.",

@@ -95,7 +95,7 @@ class NotificationsCog(commands.GroupCog, group_name="notifications"):
 	@tasks.loop()
 	async def redis_pubsub_reader(self):
 		async with self.redis.pubsub() as pubsub:
-			await pubsub.subscribe(f"discord:{notification_type}:ping" for notification_type in NOTIFICATION_TYPES)
+			await pubsub.subscribe(*[f"discord:{notification_type}:ping" for notification_type in NOTIFICATION_TYPES])
 			while True:
 				message = await pubsub.get_message(ignore_subscribe_messages=True, timeout=None)
 				if message is not None:

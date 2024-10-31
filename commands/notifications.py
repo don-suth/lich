@@ -4,6 +4,36 @@ from discord.ext import commands, tasks
 import redis.asyncio as redis
 
 
+NOTIFICATION_TYPES = [
+	"minutes",
+	"news",
+	"library",
+	"door",
+]
+
+
+class ChannelInputModal(discord.ui.Modal, title="Enter Channel ID:"):
+	channel_id = discord.ui.TextInput(label="Enter Channel ID:")
+
+	def __init__(self, *args, redis_client, notification_type, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.redis_client = redis_client
+		self.notification_type = notification_type
+
+	async def on_submit(self, interaction: discord.Interaction) -> None:
+		try:
+			subscribed_channel_id = int(f"{self.channel_id}")
+			text_channel = interaction.client.get_channel(subscribed_channel_id)
+			channel_name = text_channel.name
+			channel_guild_name = text_channel.guild.name
+		except ValueError:
+			await interaction.response.send_message("An error occurred.", ephemeral=True)
+			return
+		await self.redis_client.sadd(f"discord:{self.notification_type}:channels", subscribed_channel_id)
+		await interaction.response.send_message(f"`Set up {channel_name} (in Guild {channel_guild_name}) to receive {self.notification_type} notifications.`", ephemeral=False)
+
+
+
 @app_commands.guild_only()
 class NotificationsCog(commands.Cog):
 	def __init__(self, bot: commands.Bot):

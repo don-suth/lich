@@ -34,13 +34,13 @@ class ChannelInputModal(discord.ui.Modal, title="Enter Channel ID:"):
 		if self.remove:
 			await self.redis_client.srem(f"discord:{self.notification_type}:channels", subscribed_channel_id)
 			await interaction.response.send_message(
-				f"`Set up {channel_name} (in Guild {channel_guild_name}) to receive {self.notification_type} notifications.`",
+				f"`Removed {channel_name} (in Guild {channel_guild_name}) from receiving {self.notification_type} notifications.`",
 				ephemeral=False
 			)
 		else:
 			await self.redis_client.sadd(f"discord:{self.notification_type}:channels", subscribed_channel_id)
 			await interaction.response.send_message(
-				f"`Removed {channel_name} (in Guild {channel_guild_name}) from receiving {self.notification_type} notifications.`",
+				f"`Set up {channel_name} (in Guild {channel_guild_name}) to receive {self.notification_type} notifications.`",
 				ephemeral=False
 			)
 

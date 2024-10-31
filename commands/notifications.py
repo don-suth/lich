@@ -15,10 +15,12 @@ NOTIFICATION_TYPES = [
 class ChannelInputModal(discord.ui.Modal, title="Enter Channel ID:"):
 	channel_id = discord.ui.TextInput(label="Enter Channel ID:")
 
-	def __init__(self, *args, redis_client, notification_type, **kwargs):
+	def __init__(self, *args, redis_client, notification_type, remove=False, **kwargs):
 		super().__init__(*args, **kwargs)
 		self.redis_client = redis_client
 		self.notification_type = notification_type
+		self.title = f"({self.notification_type.title()}) Enter Channel ID:"
+		self.remove = remove
 
 	async def on_submit(self, interaction: discord.Interaction) -> None:
 		try:
@@ -29,43 +31,75 @@ class ChannelInputModal(discord.ui.Modal, title="Enter Channel ID:"):
 		except ValueError:
 			await interaction.response.send_message("An error occurred.", ephemeral=True)
 			return
-		await self.redis_client.sadd(f"discord:{self.notification_type}:channels", subscribed_channel_id)
-		await interaction.response.send_message(f"`Set up {channel_name} (in Guild {channel_guild_name}) to receive {self.notification_type} notifications.`", ephemeral=False)
-
+		if self.remove:
+			await self.redis_client.srem(f"discord:{self.notification_type}:channels", subscribed_channel_id)
+			await interaction.response.send_message(
+				f"`Set up {channel_name} (in Guild {channel_guild_name}) to receive {self.notification_type} notifications.`",
+				ephemeral=False
+			)
+		else:
+			await self.redis_client.sadd(f"discord:{self.notification_type}:channels", subscribed_channel_id)
+			await interaction.response.send_message(
+				f"`Removed {channel_name} (in Guild {channel_guild_name}) from receiving {self.notification_type} notifications.`",
+				ephemeral=False
+			)
 
 
 @app_commands.guild_only()
-class NotificationsCog(commands.Cog):
+class NotificationsCog(commands.GroupCog, group_name="notifications"):
 	def __init__(self, bot: commands.Bot):
 		self.bot = bot
 		self.redis = None
 
-	@app_commands.default_permissions()
-	@app_commands.command(description="Add this channel to the list of channels to be pinged")
-	async def setup_notifications(self, interaction: discord.Interaction):
-		await self.redis.sadd("discord:notifications:channels", interaction.channel_id)
-		await interaction.response.send_message(
-			"This channel has been setup to receive notifications.",
-			ephemeral=True
-		)
+	@app_commands.command(description="Setup a channel for minutes notifications")
+	async def setup_minutes(self, interaction: discord.Interaction):
+		await interaction.response.send_modal(ChannelInputModal(redis_client=self.redis, notification_type="minutes"))
 
-	@app_commands.default_permissions()
+	@app_commands.command(description="Setup a channel for news notifications")
+	async def setup_news(self, interaction: discord.Interaction):
+		await interaction.response.send_modal(ChannelInputModal(redis_client=self.redis, notification_type="news"))
+
+	@app_commands.command(description="Setup a channel for library notifications")
+	async def setup_library(self, interaction: discord.Interaction):
+		await interaction.response.send_modal(ChannelInputModal(redis_client=self.redis, notification_type="library"))
+
+	@app_commands.command(description="Setup a channel for door notifications")
+	async def setup_door(self, interaction: discord.Interaction):
+		await interaction.response.send_modal(ChannelInputModal(redis_client=self.redis, notification_type="door"))
+
+	@app_commands.command(description="Setup a channel for minutes notifications")
+	async def remove_minutes(self, interaction: discord.Interaction):
+		await interaction.response.send_modal(ChannelInputModal(remove=True, redis_client=self.redis, notification_type="minutes"))
+
+	@app_commands.command(description="Setup a channel for news notifications")
+	async def remove_news(self, interaction: discord.Interaction):
+		await interaction.response.send_modal(ChannelInputModal(remove=True, redis_client=self.redis, notification_type="news"))
+
+	@app_commands.command(description="Setup a channel for library notifications")
+	async def remove_library(self, interaction: discord.Interaction):
+		await interaction.response.send_modal(ChannelInputModal(remove=True, redis_client=self.redis, notification_type="library"))
+
+	@app_commands.command(description="Setup a channel for door notifications")
+	async def remove_door(self, interaction: discord.Interaction):
+		await interaction.response.send_modal(ChannelInputModal(remove=True, redis_client=self.redis, notification_type="door"))
+
 	@app_commands.command(description="Remove this channel from the list of channels to be pinged")
-	async def remove_notifications(self, interaction: discord.Interaction):
-		await self.redis.srem("discord:notifications:channels", interaction.channel_id)
+	async def remove_all(self, interaction: discord.Interaction):
+		for notification_type in NOTIFICATION_TYPES:
+			await self.redis.delete(f"discord:{notification_type}:channels")
 		await interaction.response.send_message(
-			"This channel won't receive notifications.",
-			ephemeral=True
+			"Removed all channels from receiving notifications.",
+			ephemeral=False
 		)
 
 	@tasks.loop()
 	async def redis_pubsub_reader(self):
 		async with self.redis.pubsub() as pubsub:
-			await pubsub.subscribe("discord:notifications:ping")
+			await pubsub.subscribe(f"discord:{notification_type}:ping" for notification_type in NOTIFICATION_TYPES)
 			while True:
 				message = await pubsub.get_message(ignore_subscribe_messages=True, timeout=None)
 				if message is not None:
-					async for channel_id in self.redis.sscan_iter("discord:notifications:channels"):
+					async for channel_id in self.redis.sscan_iter(f"discord:{message['channel'][8:-5]}:channels"):
 						await self.bot.get_channel(int(channel_id)).send(message.get("data"))
 
 	async def cog_load(self):

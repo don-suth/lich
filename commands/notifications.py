@@ -2,6 +2,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands, tasks
 import redis.asyncio as redis
+import os
 
 
 NOTIFICATION_TYPES = [
@@ -103,7 +104,8 @@ class NotificationsCog(commands.GroupCog, group_name="notifications"):
 						await self.bot.get_channel(int(channel_id)).send(message.get("data"))
 
 	async def cog_load(self):
-		self.redis = await redis.Redis(host="localhost", port=6379, decode_responses=True)
+		redis_host = os.environ.get("REDIS_HOST", "localhost")
+		self.redis = await redis.Redis(host=redis_host, port=6379, decode_responses=True)
 		print(f"\t - {self.__class__.__name__} loaded")
 		self.redis_pubsub_reader.start()
 		print(f"\t\t - Task 'redis_pubsub_reader' started")

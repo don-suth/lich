@@ -10,4 +10,4 @@ RUN pip install --no-cache-dir get-docker-secret
 # Copy app
 COPY . .
 
-CMD [ "python", "bot.py" ]
+CMD [ "python", "-u", "bot.py" ]

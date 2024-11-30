@@ -37,7 +37,7 @@ class LichClient(commands.Bot):
 		self.default_extensions = [
 			"commands.startingrules", "commands.dice", "commands.warriorcat",
 			"commands.flavour", "commands.gavin", "commands.library_items",
-			"commands.keysmash", "commands.webcams"
+			"commands.keysmash", "commands.webcams", "commands.door"
 		]
 		self.controller_extensions = [
 			"commands.relay", "commands.notifications"

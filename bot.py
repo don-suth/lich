@@ -1,7 +1,5 @@
 import discord
 from discord.ext import commands
-from statuses import change_status
-import asyncio
 from get_docker_secret import get_docker_secret
 import os
 import logging
@@ -37,7 +35,8 @@ class LichClient(commands.Bot):
 		self.default_extensions = [
 			"cogs.startingrules", "cogs.dice", "cogs.warriorcat",
 			"cogs.flavour", "cogs.gavin", "cogs.library_items",
-			"cogs.keysmash", "cogs.webcams", "cogs.door"
+			"cogs.keysmash", "cogs.webcams", "cogs.door",
+			"cogs.statuses"
 		]
 		self.controller_extensions = [
 			"cogs.relay", "cogs.notifications"
@@ -72,8 +71,6 @@ class LichClient(commands.Bot):
 	async def on_ready(self):
 		print(f'Logged in as {client.user} (ID: {client.user.id})')
 		print('------')
-		if self.random_status_task is None:
-			self.random_status_task = asyncio.create_task(change_status(self))
 
 
 client = LichClient()

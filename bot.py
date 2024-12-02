@@ -35,15 +35,15 @@ class LichClient(commands.Bot):
 		starting_intents.typing = False
 		super().__init__(command_prefix="this_will_never_trigger", intents=starting_intents)
 		self.default_extensions = [
-			"commands.startingrules", "commands.dice", "commands.warriorcat",
-			"commands.flavour", "commands.gavin", "commands.library_items",
-			"commands.keysmash", "commands.webcams", "commands.door"
+			"cogs.startingrules", "cogs.dice", "cogs.warriorcat",
+			"cogs.flavour", "cogs.gavin", "cogs.library_items",
+			"cogs.keysmash", "cogs.webcams", "cogs.door"
 		]
 		self.controller_extensions = [
-			"commands.relay", "commands.notifications"
+			"cogs.relay", "cogs.notifications"
 		]
 		if LICH_DEBUG == "TRUE":
-			self.default_extensions.append('commands.test')
+			self.default_extensions.append('cogs.test')
 
 		self.random_card_task = None
 		self.random_status_task = None

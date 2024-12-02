@@ -1,8 +1,11 @@
 import random
 import discord
+from discord import app_commands
+from discord.ext import commands, tasks
 import asyncio
 from aiohttp import ClientSession
 import os
+import redis.asyncio as redis
 
 API_ACCESS = os.environ.get('API_ACCESS', 'http://127.0.0.1:8000/api')
 LICH_DEBUG = os.environ.get('LICH_DEBUG', 'FALSE')
@@ -128,3 +131,60 @@ async def get_random_status_choice(discord_client):
 			activity = discord.CustomActivity(name=activity_name, state=activity_name)
 
 	return activity
+
+
+class StatusChangingCog(commands.Cog):
+	def __init__(self, bot: commands.Bot):
+		self.bot = bot
+		self.activity = None
+		self.redis = None
+		self.status = discord.Status.idle
+
+	@tasks.loop(minutes=30)
+	async def change_status(self):
+		self.activity = await get_random_status_choice(self.bot)
+		await self.bot.change_presence(activity=self.activity, status=self.status)
+
+	@tasks.loop()
+	async def door_watcher(self):
+		async with self.redis.pubsub() as pubsub:
+			await pubsub.subscribe("door:updates")
+			while True:
+				message = await pubsub.get_message(ignore_subscribe_messages=True, timeout=None)
+				if message is not None and self.activity is not None:
+					match message.get("data"):
+						case "OPEN":
+							self.status = discord.Status.online
+						case "CLOSED":
+							self.status = discord.Status.do_not_disturb
+						case _:
+							self.status = discord.Status.idle
+					await self.bot.change_presence(activity=self.activity, status=self.status)
+
+	async def cog_load(self):
+		redis_host = os.environ.get("REDIS_HOST", "localhost")
+		self.redis = await redis.Redis(host=redis_host, port=6379, decode_responses=True)
+		redis_door_status = await self.redis.get("door:status")
+		match redis_door_status:
+			case "OPEN":
+				self.status = discord.Status.online
+			case "CLOSED":
+				self.status = discord.Status.do_not_disturb
+			case _:
+				self.status = discord.Status.idle
+		print(f"\t - {self.__class__.__name__} loaded")
+		self.change_status.start()
+		print(f"\t\t - Task 'change_status' started")
+		self.door_watcher.start()
+		print(f"\t\t - Task 'door_watcher' started")
+
+	async def cog_unload(self):
+		print(f"\t - {self.__class__.__name__} unloaded")
+		self.change_status.stop()
+		print(f"\t\t - Task 'change_status' stopped")
+		self.door_watcher.stop()
+		print(f"\t\t - Task 'door_watcher' stopped")
+
+
+async def setup(bot: commands.Bot):
+	await bot.add_cog(StatusChangingCog(bot=bot))

@@ -173,6 +173,7 @@ class StatusChangingCog(commands.Cog):
 		print(f"\t\t - Task 'change_status' stopped")
 		self.door_watcher.stop()
 		print(f"\t\t - Task 'door_watcher' stopped")
+		await self.redis.aclose()
 
 
 async def setup(bot: commands.Bot):

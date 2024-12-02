@@ -112,7 +112,7 @@ class NotificationsCog(commands.GroupCog, group_name="notifications"):
 
 	async def cog_unload(self):
 		self.redis_pubsub_reader.stop()
-		await self.redis.close()
+		await self.redis.aclose()
 		print(f"\t - {self.__class__.__name__} unloaded")
 
 

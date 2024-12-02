@@ -130,6 +130,7 @@ class StatusChangingCog(commands.Cog):
 
 	@tasks.loop(minutes=30)
 	async def change_status(self):
+		await self.bot.wait_until_ready()
 		self.activity = await get_random_status_choice(self.bot)
 		await self.bot.change_presence(activity=self.activity, status=self.status)
 

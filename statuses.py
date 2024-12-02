@@ -1,8 +1,6 @@
 import random
 import discord
-from discord import app_commands
 from discord.ext import commands, tasks
-import asyncio
 from aiohttp import ClientSession
 import os
 import redis.asyncio as redis
@@ -86,16 +84,6 @@ STATUS_CHOICES = [
 	('custom',			'Morbing'),
 	('custom',			'Trans rights!!'),
 ]
-
-
-async def change_status(discord_client):
-	while True:
-		activity = await get_random_status_choice(discord_client)
-		await discord_client.change_presence(activity=activity)
-		if LICH_DEBUG == 'FALSE':
-			await asyncio.sleep(60*20)
-		else:
-			await asyncio.sleep(10)
 
 
 def check_for_special_status():

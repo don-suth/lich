@@ -25,7 +25,6 @@ class DoorCog(commands.GroupCog, group_name="door"):
 	async def open(self, interaction: discord.Interaction):
 		await self.redis.set("door:status", "OPEN")
 		await self.redis.publish("door:updates", "OPEN")
-		door_message_id = await self.redis.get("door_message:id")
 		open_embed = discord.Embed(
 			title="Door Open!",
 			description="The door is open!",

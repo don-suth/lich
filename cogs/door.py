@@ -3,6 +3,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 import redis.asyncio as redis
+from datetime import datetime, timezone, timedelta
 
 
 class DoorCog(commands.GroupCog, group_name="door"):
@@ -15,14 +16,32 @@ class DoorCog(commands.GroupCog, group_name="door"):
 	async def open(self, interaction: discord.Interaction):
 		await self.redis.set("door:status", "OPEN")
 		await self.redis.publish("door:updates", "OPEN")
-		await interaction.response.send_message("OPEN!", ephemeral=True)
+		open_embed = discord.Embed(
+			title="Door Open!",
+			description="The door is open!",
+			colour=discord.Colour.green(),
+			timestamp=datetime.now(tz=timezone(timedelta(hours=8))),
+		)
+		open_embed.set_footer(text=f"Last opened by {interaction.user.display_name}")
+
+		await self.bot.get_channel(1313015976551383103).send(embed=open_embed)
+		await interaction.response.send_message("Door opened.", ephemeral=True)
 
 	@app_commands.default_permissions()
 	@app_commands.command(description="Close the clubroom")
 	async def close(self, interaction: discord.Interaction):
 		await self.redis.set("door:status", "CLOSED")
 		await self.redis.publish("door:updates", "CLOSED")
-		await interaction.response.send_message("CLOSE!", ephemeral=True)
+		closed_embed = discord.Embed(
+			title="Door Closed!",
+			description="The door is closed!",
+			colour=discord.Colour.red(),
+			timestamp=datetime.now(tz=timezone(timedelta(hours=8))),
+		)
+		closed_embed.set_footer(text=f"Last closed by {interaction.user.display_name}")
+
+		await self.bot.get_channel(1313015976551383103).send(embed=closed_embed)
+		await interaction.response.send_message("Door closed.", ephemeral=True)
 
 	async def cog_load(self):
 		redis_host = os.environ.get("REDIS_HOST", "localhost")

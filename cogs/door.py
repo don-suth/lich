@@ -16,6 +16,7 @@ class DoorCog(commands.GroupCog, group_name="door"):
 	async def open(self, interaction: discord.Interaction):
 		await self.redis.set("door:status", "OPEN")
 		await self.redis.publish("door:updates", "OPEN")
+		door_message_id = await self.redis.get("door_message:id")
 		open_embed = discord.Embed(
 			title="Door Open!",
 			description="The door is open!",
@@ -23,8 +24,12 @@ class DoorCog(commands.GroupCog, group_name="door"):
 			timestamp=datetime.now(tz=timezone(timedelta(hours=8))),
 		)
 		open_embed.set_footer(text=f"Last opened by {interaction.user.display_name}")
-
-		await self.bot.get_channel(1313015976551383103).send(embed=open_embed)
+		if door_message_id is None:
+			door_message = await self.bot.get_channel(1313015976551383103).send(embed=open_embed)
+			await self.redis.set("door_message:id", door_message.id)
+		else:
+			door_message = await self.bot.get_channel(1313015976551383103).fetch_message(door_message_id)
+			await door_message.edit(embed=open_embed)
 		await interaction.response.send_message("Door opened.", ephemeral=True)
 
 	@app_commands.default_permissions()
@@ -32,6 +37,7 @@ class DoorCog(commands.GroupCog, group_name="door"):
 	async def close(self, interaction: discord.Interaction):
 		await self.redis.set("door:status", "CLOSED")
 		await self.redis.publish("door:updates", "CLOSED")
+		door_message_id = await self.redis.get("door_message:id")
 		closed_embed = discord.Embed(
 			title="Door Closed!",
 			description="The door is closed!",
@@ -40,7 +46,12 @@ class DoorCog(commands.GroupCog, group_name="door"):
 		)
 		closed_embed.set_footer(text=f"Last closed by {interaction.user.display_name}")
 
-		await self.bot.get_channel(1313015976551383103).send(embed=closed_embed)
+		if door_message_id is None:
+			door_message = await self.bot.get_channel(1313015976551383103).send(embed=closed_embed)
+			await self.redis.set("door_message:id", door_message.id)
+		else:
+			door_message = await self.bot.get_channel(1313015976551383103).fetch_message(door_message_id)
+			await door_message.edit(embed=closed_embed)
 		await interaction.response.send_message("Door closed.", ephemeral=True)
 
 	async def cog_load(self):

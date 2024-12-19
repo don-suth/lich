@@ -32,7 +32,7 @@ class DoorCog(commands.GroupCog, group_name="door"):
 			timestamp=datetime.now(tz=timezone(timedelta(hours=8))),
 		)
 		open_embed.set_footer(text=f"Last opened by {interaction.user.display_name}")
-		open_embed.set_image(url="https://unigames.asn.au/static/images/misc/unigames_open.jpg")
+		open_embed.set_image(url="https://unigames.asn.au/static/images/misc/unigames_open.png")
 		await self.send_or_edit_door_message(embed=open_embed)
 		await interaction.response.send_message("Door opened.", ephemeral=True)
 
@@ -48,7 +48,7 @@ class DoorCog(commands.GroupCog, group_name="door"):
 			timestamp=datetime.now(tz=timezone(timedelta(hours=8))),
 		)
 		closed_embed.set_footer(text=f"Last closed by {interaction.user.display_name}")
-		closed_embed.set_thumbnail(url="https://unigames.asn.au/static/images/misc/unigames_closed.jpg")
+		closed_embed.set_thumbnail(url="https://unigames.asn.au/static/images/misc/unigames_closed.png")
 		await self.send_or_edit_door_message(embed=closed_embed)
 		await interaction.response.send_message("Door closed.", ephemeral=True)
 

@@ -101,7 +101,11 @@ class NotificationsCog(commands.GroupCog, group_name="notifications"):
 				message = await pubsub.get_message(ignore_subscribe_messages=True, timeout=None)
 				if message is not None:
 					async for channel_id in self.redis.sscan_iter(f"discord:{message['channel'][8:-5]}:channels"):
-						await self.bot.get_channel(int(channel_id)).send(message.get("data"))
+						allowed_mentions = discord.AllowedMentions.all()
+						await self.bot.get_channel(int(channel_id)).send(
+							content=message.get("data"),
+							allowed_mentions=allowed_mentions
+						)
 
 	async def cog_load(self):
 		redis_host = os.environ.get("REDIS_HOST", "localhost")

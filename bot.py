@@ -31,7 +31,8 @@ class LichClient(commands.Bot):
 	def __init__(self):
 		starting_intents = discord.Intents.default()
 		starting_intents.typing = False
-		super().__init__(command_prefix="this_will_never_trigger", intents=starting_intents)
+		allowed_mentions = discord.AllowedMentions.none()
+		super().__init__(command_prefix="this_will_never_trigger", intents=starting_intents, allowed_mentions=allowed_mentions)
 		self.default_extensions = [
 			"cogs.startingrules", "cogs.dice", "cogs.warriorcat",
 			"cogs.flavour", "cogs.gavin", "cogs.library_items",

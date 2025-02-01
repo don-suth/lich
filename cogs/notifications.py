@@ -8,7 +8,7 @@ import os
 NOTIFICATION_TYPES = [
 	"minutes",
 	"news",
-	"library",
+	"operations",
 	"door",
 ]
 
@@ -60,9 +60,9 @@ class NotificationsCog(commands.GroupCog, group_name="notifications"):
 	async def setup_news(self, interaction: discord.Interaction):
 		await interaction.response.send_modal(ChannelInputModal(redis_client=self.redis, notification_type="news"))
 
-	@app_commands.command(description="Setup a channel for library notifications")
-	async def setup_library(self, interaction: discord.Interaction):
-		await interaction.response.send_modal(ChannelInputModal(redis_client=self.redis, notification_type="library"))
+	@app_commands.command(description="Setup a channel for operational notifications")
+	async def setup_operations(self, interaction: discord.Interaction):
+		await interaction.response.send_modal(ChannelInputModal(redis_client=self.redis, notification_type="operations"))
 
 	@app_commands.command(description="Setup a channel for door notifications")
 	async def setup_door(self, interaction: discord.Interaction):
@@ -76,9 +76,9 @@ class NotificationsCog(commands.GroupCog, group_name="notifications"):
 	async def remove_news(self, interaction: discord.Interaction):
 		await interaction.response.send_modal(ChannelInputModal(remove=True, redis_client=self.redis, notification_type="news"))
 
-	@app_commands.command(description="Setup a channel for library notifications")
-	async def remove_library(self, interaction: discord.Interaction):
-		await interaction.response.send_modal(ChannelInputModal(remove=True, redis_client=self.redis, notification_type="library"))
+	@app_commands.command(description="Setup a channel for operational notifications")
+	async def remove_operations(self, interaction: discord.Interaction):
+		await interaction.response.send_modal(ChannelInputModal(remove=True, redis_client=self.redis, notification_type="operations"))
 
 	@app_commands.command(description="Setup a channel for door notifications")
 	async def remove_door(self, interaction: discord.Interaction):

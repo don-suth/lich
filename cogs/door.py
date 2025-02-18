@@ -64,6 +64,52 @@ class DoorCog(commands.GroupCog, group_name="door"):
 		await self.close_door(display_name=interaction.user.display_name)
 		await interaction.response.send_message("Door closed.", ephemeral=True)
 
+	@commands.Cog.listener()
+	async def on_message(self, message: discord.Message):
+		"""
+			Listens to messages in the Door Updates Channel, and updates the door status
+			if it finds the words "open" or "closed" in the message.
+		"""
+		# If the message is from a particular channel...
+		if message.channel.id == 1284487409987223613:
+			# ...And the message didn't come from the bot...
+			if message.author.id != self.bot.user.id:
+				if message.content == "":
+					print("Empty message")
+				contains_open = "open" in message.content
+				contains_closed = "closed" in message.content
+
+				if contains_open and not contains_closed:
+					# Opem the door, and react to the post to confirm
+					await self.open_door(display_name=message.author.display_name)
+					await message.add_reaction("<a:room:1341342965859356682>")
+					await message.add_reaction("<a:is:1341343001351421992>")
+					await message.add_reaction("<a:open:1341343021601394770>")
+
+				elif contains_closed and not contains_open:
+					# Close the door, and react to the post to confirm
+					await self.close_door(display_name=message.author.display_name)
+					await message.add_reaction("<a:room:1341342965859356682>")
+					await message.add_reaction("<a:is:1341343001351421992>")
+					await message.add_reaction("<a:shut:1341343034918572123>")
+
+				elif contains_open and contains_closed:
+					# Ambiguous - do nothing and let the user know.
+					await message.author.send(
+						'Your door status update contained both "open" and "closed". \n'
+						'Please send a new update with exactly one of those keywords. \n'
+						'Thank you, citizen! Remember, compliance is mandatory!'
+					)
+					await message.add_reaction("❌")
+				elif not contains_open and not contains_closed:
+					# No detected updates - do nothing and let the user know.
+					await message.author.send(
+						'Your door status update didn\'t contain either "open" or "closed". \n'
+						'Please send a new update with exactly one of those keywords. \n'
+						'Thank you, citizen! Remember, compliance is mandatory!'
+					)
+					await message.add_reaction("❌")
+
 	async def cog_load(self):
 		redis_host = os.environ.get("REDIS_HOST", "localhost")
 		self.redis = await redis.Redis(host=redis_host, port=6379, decode_responses=True)

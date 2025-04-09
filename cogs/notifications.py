@@ -102,7 +102,7 @@ class NotificationsCog(commands.GroupCog, group_name="notifications"):
 	)
 	async def let_me_in(self, interaction: discord.Interaction, entrance: Literal["Tav", "Guild"]):
 		action_json = {
-			"time": datetime.now(),
+			"time": str(datetime.now()),
 			"action": "LetMeIn",
 			"data": {
 				"name": interaction.user.display_name,

@@ -97,7 +97,7 @@ class NotificationsCog(commands.GroupCog, group_name="notifications"):
 		)
 
 	@app_commands.command(
-		name="LetMeIn",
+		name="let_me_in",
 		description="Let Me In!"
 	)
 	async def let_me_in(self, interaction: discord.Interaction, entrance=Literal["Tav", "Guild"]):

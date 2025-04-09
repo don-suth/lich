@@ -3,6 +3,9 @@ from discord import app_commands
 from discord.ext import commands, tasks
 import redis.asyncio as redis
 import os
+from typing import Literal
+from datetime import datetime
+import json
 
 
 NOTIFICATION_TYPES = [
@@ -92,6 +95,23 @@ class NotificationsCog(commands.GroupCog, group_name="notifications"):
 			"Removed all channels from receiving notifications.",
 			ephemeral=False
 		)
+
+	@app_commands.command(
+		name="LetMeIn",
+		description="Let Me In!"
+	)
+	async def let_me_in(self, interaction: discord.Interaction, entrance=Literal["Tav", "Guild"]):
+		action_json = {
+			"time": datetime.now(),
+			"action": "LetMeIn",
+			"data": {
+				"name": interaction.user.display_name,
+				"entrance": entrance
+			}
+		}
+		await self.redis.publish("telepathy:json", json.dumps(action_json))
+		await interaction.response.send_message("Sent a message!", ephemeral=True)
+
 
 	@tasks.loop()
 	async def redis_pubsub_reader(self):

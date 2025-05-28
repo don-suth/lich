@@ -101,16 +101,22 @@ class NotificationsCog(commands.GroupCog, group_name="notifications"):
 		description="Let Me In!"
 	)
 	async def let_me_in(self, interaction: discord.Interaction, entrance: Literal["Tav", "Guild"]):
-		action_json = {
-			"time": str(datetime.now()),
-			"action": "LetMeIn",
-			"data": {
-				"name": interaction.user.display_name,
-				"entrance": entrance
-			}
-		}
-		await self.redis.publish("telepathy:json", json.dumps(action_json))
-		await interaction.response.send_message("Sent a message!", ephemeral=True)
+		display_name = await self.redis.hget("lich:linked_accounts", interaction.user.id)
+		if display_name is None:
+			await interaction.response.send_message(f"You don't appear to have linked your account, {interaction.user.display_name}", ephemeral=True)
+		else:
+			await interaction.response.send_message(f"Hello there {display_name}! Thanks for linking your account!")
+
+		# action_json = {
+		# 	"time": str(datetime.now()),
+		# 	"action": "LetMeIn",
+		# 	"data": {
+		# 		"name": interaction.user.display_name,
+		# 		"entrance": entrance
+		# 	}
+		# }
+		# await self.redis.publish("telepathy:json", json.dumps(action_json))
+		# await interaction.response.send_message("Sent a message!", ephemeral=True)
 
 
 	@tasks.loop()

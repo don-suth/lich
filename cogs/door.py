@@ -77,7 +77,7 @@ class DoorCog(commands.GroupCog, group_name="door"):
 				if message.content == "":
 					print("Empty message")
 				contains_open = "open" in message.content.lower()
-				contains_closed = "closed" in message.content.lower()
+				contains_closed = "close" in message.content.lower()
 
 				if contains_open and not contains_closed:
 					# Opem the door, and react to the post to confirm

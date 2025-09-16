@@ -1,5 +1,10 @@
+from typing import Any
+
 from aiohttp import ClientSession
 import discord
+from discord import Interaction
+from discord._types import ClientT
+from discord.ext import commands
 
 
 item_code = {
@@ -8,6 +13,54 @@ item_code = {
 	'CG': 'Card Game',
 	'??': '',
 }
+
+
+class LetMeInView(discord.ui.LayoutView):
+	class MyButton(discord.ui.Button):
+		async def callback(self, interaction: Interaction[ClientT]) -> Any:
+			await interaction.response.send_message('Hi!', ephemeral=True)
+	
+	container = discord.ui.Container(
+		discord.ui.TextDisplay("# Let Me In!"),
+		discord.ui.Separator(),
+		discord.ui.TextDisplay(
+			"If you are locked out of Cameron Hall, you can send a message to "
+			"the people inside the Unigames clubroom so they can let you in."
+		),
+		discord.ui.TextDisplay(
+			"Conditions:\n"
+			"- The clubroom must be open.\n"
+			"- You must be an active Unigames member.\n"
+			"- You must have linked your Unigames account with your Discord account.\n"
+			"- Don't use this unless you are physically at Cameron Hall waiting to get in."
+		),
+		discord.ui.ActionRow(
+			MyButton(label="I Understand - Let Me In!", style=discord.ButtonStyle.success)
+		)
+	)
+
+
+@discord.app_commands.guild_only()
+class TestCog(commands.GroupCog, group_name="test"):
+	def __init__(self, bot: commands.Bot):
+		self.bot = bot
+	
+	@discord.app_commands.command(description="Test a modal")
+	async def test_modal(self, interaction: discord.Interaction):
+		await interaction.response.send_message(ephemeral=True, view=LetMeInView())
+	
+	@discord.app_commands.command(description="Reload test commands")
+	async def test_reload(self, interaction: discord.Interaction):
+		await interaction.response.defer(ephemeral=True, thinking=True)
+		await self.bot.reload_extension("cogs.test")
+		await interaction.followup.send("Reloaded!")
+
+
+	async def cog_load(self):
+		print(f"\t - {self.__class__.__name__} loaded")
+	
+	async def cog_unload(self):
+		print(f"\t - {self.__class__.__name__} unloaded")
 
 
 def trim_description(description):
@@ -86,5 +139,5 @@ class TestGroup(discord.app_commands.Group):
 			await interaction.response.send_message(embed=embed)
 
 
-async def setup(bot):
-	bot.tree.add_command(TestGroup(name="test"))
+async def setup(bot: commands.Bot):
+	await bot.add_cog(TestCog(bot=bot))

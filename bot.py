@@ -44,7 +44,7 @@ class LichClient(commands.Bot):
 			"cogs.relay", "cogs.notifications"
 		]
 		if LICH_DEBUG == "TRUE":
-			self.default_extensions.append('cogs.test')
+			self.controller_extensions.append('cogs.test')
 
 		self.random_card_task = None
 		self.random_status_task = None

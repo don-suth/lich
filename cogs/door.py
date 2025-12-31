@@ -9,7 +9,7 @@ from datetime import datetime, timezone, timedelta
 DOOR_UPDATES_CHANNEL = 1284487409987223613
 
 # Channel where the bot posts updates about the door
-DOOR_STATUS_CHANNEL = 1313015976551383103
+DOOR_STATUS_CHANNEL = 1284487409987223613
 
 
 class DoorCog(commands.GroupCog, group_name="door"):

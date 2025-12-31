@@ -18,7 +18,7 @@ item_code = {
 class LetMeInView(discord.ui.LayoutView):
 	class MyButton(discord.ui.Button):
 		async def callback(self, interaction: Interaction[ClientT]) -> Any:
-			await interaction.response.send_message('Hi!', ephemeral=True)
+			await interaction.response.send_modal(LetMeInModal())
 	
 	container = discord.ui.Container(
 		discord.ui.TextDisplay("# Let Me In!"),
@@ -38,6 +38,32 @@ class LetMeInView(discord.ui.LayoutView):
 			MyButton(label="I Understand - Let Me In!", style=discord.ButtonStyle.success)
 		)
 	)
+
+
+class LetMeInModal(discord.ui.Modal, title="Which Entrance?"):
+	entrance = discord.ui.Label(
+		text="Which entrance are you at?",
+		description="Please be ready and waiting by this entrance.",
+		component=discord.ui.Select(
+			placeholder="Entrance",
+			options=[
+				discord.SelectOption(
+					label="Tav",
+					value="tav",
+					description="The large wooden double doors near the Tav."
+				),
+				discord.SelectOption(
+					label="Guild",
+					value="guild",
+					description="Small single wooden door near the Guild Village / Loading Zone."
+				)
+			]
+		)
+	)
+	
+	async def on_submit(self, interaction: discord.Interaction):
+		assert isinstance(self.entrance.component, discord.ui.Select)
+		await interaction.response.send_message(f"You selected {self.entrance.component.values[0]}")
 
 
 @discord.app_commands.guild_only()

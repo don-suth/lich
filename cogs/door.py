@@ -17,15 +17,6 @@ class DoorCog(commands.GroupCog, group_name="door"):
 		self.bot = bot
 		self.redis = None
 
-	async def send_or_edit_door_message(self, embed):
-		door_message_id = await self.redis.get("door_message:id")
-		if door_message_id is None:
-			door_message = await self.bot.get_channel(DOOR_STATUS_CHANNEL).send(content="Door status: ", embed=embed)
-			await self.redis.set("door_message:id", door_message.id)
-		else:
-			door_message = await self.bot.get_channel(DOOR_STATUS_CHANNEL).fetch_message(door_message_id)
-			await door_message.edit(content="Door status: ", embed=embed)
-
 	async def open_door(self, display_name):
 		await self.redis.set("door:status", "OPEN")
 		await self.redis.publish("door:updates", "OPEN")
@@ -35,9 +26,9 @@ class DoorCog(commands.GroupCog, group_name="door"):
 			colour=discord.Colour.green(),
 			timestamp=datetime.now(tz=timezone(timedelta(hours=8))),
 		)
-		open_embed.set_footer(text=f"Last opened by {display_name}")
+		open_embed.set_footer(text=f"Opened by {display_name}")
 		open_embed.set_image(url="https://unigames.asn.au/static/images/misc/unigames_open.png")
-		await self.send_or_edit_door_message(embed=open_embed)
+		await self.bot.get_channel(DOOR_STATUS_CHANNEL).send(content="Door status: ", embed=open_embed)
 
 	async def close_door(self, display_name):
 		await self.redis.set("door:status", "CLOSED")
@@ -48,9 +39,9 @@ class DoorCog(commands.GroupCog, group_name="door"):
 			colour=discord.Colour.red(),
 			timestamp=datetime.now(tz=timezone(timedelta(hours=8))),
 		)
-		closed_embed.set_footer(text=f"Last closed by {display_name}")
+		closed_embed.set_footer(text=f"Closed by {display_name}")
 		closed_embed.set_thumbnail(url="https://unigames.asn.au/static/images/misc/unigames_closed.png")
-		await self.send_or_edit_door_message(embed=closed_embed)
+		await self.bot.get_channel(DOOR_STATUS_CHANNEL).send(content="Door status: ", embed=closed_embed)
 
 	@app_commands.default_permissions()
 	@app_commands.command(description="Open the clubroom")

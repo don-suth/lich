@@ -57,10 +57,19 @@ class DoorCog(commands.GroupCog, group_name="door"):
 	
 	@tasks.loop()
 	async def door_watcher(self):
-		async with self.redis.pubsub() as pubsub:
-			await pubsub.subscribe("door:updates")
-			while True:
-				message = await pubsub.get_message(ignore_subscribe_messages=True, timeout=None)
+		"""
+		Watch for door updates made by other services and post about them.
+		"""
+		while True:
+			# Wait until the door status gets updated
+			message_info = await self.redis.xread({"door:stream": "$"}, count=1, block=0)[0][1][0][1]
+			if message_info["source"] != "lich":
+				# Only post something if lich didn't update it
+				if message_info["new_status"] == "OPEN":
+					await self.open_door(message_info["member_name"])
+				elif message_info["new_status"] == "CLOSED":
+					await self.close_door(message_info["member_name"])
+			
 
 	@commands.Cog.listener()
 	async def on_message(self, message: discord.Message):

@@ -1,7 +1,7 @@
 import os
 import discord
 from discord import app_commands
-from discord.ext import commands
+from discord.ext import commands, tasks
 import redis.asyncio as redis
 from datetime import datetime, timezone, timedelta
 
@@ -63,6 +63,13 @@ class DoorCog(commands.GroupCog, group_name="door"):
 	async def close(self, interaction: discord.Interaction):
 		await self.close_door(display_name=interaction.user.display_name)
 		await interaction.response.send_message("Door closed.", ephemeral=True)
+	
+	@tasks.loop()
+	async def door_watcher(self):
+		async with self.redis.pubsub() as pubsub:
+			await pubsub.subscribe("door:updates")
+			while True:
+				message = await pubsub.get_message(ignore_subscribe_messages=True, timeout=None)
 
 	@commands.Cog.listener()
 	async def on_message(self, message: discord.Message):
@@ -114,9 +121,13 @@ class DoorCog(commands.GroupCog, group_name="door"):
 		redis_host = os.environ.get("REDIS_HOST", "localhost")
 		self.redis = await redis.Redis(host=redis_host, port=6379, decode_responses=True)
 		print(f"\t - {self.__class__.__name__} loaded")
+		self.door_watcher.start()
+		print(f"\t\t - Task 'door_watcher' started")
 
 	async def cog_unload(self):
 		print(f"\t - {self.__class__.__name__} unloaded")
+		self.door_watcher.stop()
+		print(f"\t\t - Task 'door_watcher' stopped")
 		await self.redis.aclose()
 
 

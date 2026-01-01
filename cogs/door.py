@@ -66,20 +66,26 @@ class DoorCog(commands.GroupCog, group_name="door"):
 		"""
 		Updates Redis to open the Door.
 		This involves:
-			1) Changing the status of the "door:status" key.
+			1) Changing the status of the following keys:
+				- "door:status"
+				- "door:timestamp"
+				- "door:display_name"
 			2) Publishing the status on the Pubsub channel "door:updates".
 			3) Adding an entry to the Redis stream with:
 				- timestamp
 				- new status
-				- member id
-				- member name
+				- discord id
+				- display name
 				- source (phylactery/lich)
 		"""
 		pipe = self.redis.pipeline()
+		timestamp = datetime.now(timezone.utc).timestamp()
 		pipe.set("door:status", "OPEN")
+		pipe.set("door:timestamp", timestamp)
+		pipe.set("door:display_name", discord_display_name)
 		pipe.xadd(
 			"door:stream", {
-				"timestamp": datetime.now(timezone.utc).timestamp(),
+				"timestamp": timestamp,
 				"new_status": "OPEN",
 				"id_type": "discord",
 				"discord_id": discord_id,
@@ -94,20 +100,26 @@ class DoorCog(commands.GroupCog, group_name="door"):
 		"""
 		Updates Redis to open the Door.
 		This involves:
-			1) Changing the status of the "door:status" key.
+			1) Changing the status of the following keys:
+				- "door:status"
+				- "door:timestamp"
+				- "door:display_name"
 			2) Publishing the status on the Pubsub channel "door:updates".
 			3) Adding an entry to the Redis stream with:
 				- timestamp
 				- new status
-				- member id
-				- member name
+				- discord id
+				- display name
 				- source (phylactery/lich)
 		"""
 		pipe = self.redis.pipeline()
+		timestamp = datetime.now(timezone.utc).timestamp()
 		pipe.set("door:status", "CLOSED")
+		pipe.set("door:timestamp", timestamp)
+		pipe.set("door:display_name", discord_display_name)
 		pipe.xadd(
 			"door:stream", {
-				"timestamp": datetime.now(timezone.utc).timestamp(),
+				"timestamp": timestamp,
 				"new_status": "CLOSED",
 				"id_type": "discord",
 				"discord_id": discord_id,

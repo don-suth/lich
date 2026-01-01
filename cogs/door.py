@@ -155,7 +155,7 @@ class DoorCog(commands.GroupCog, group_name="door"):
 			if it finds the words "open" or "closed" in the message.
 		"""
 		# If the message is from a particular channel...
-		if message.channel.id == 1284487409987223613:
+		if message.channel.id == DOOR_UPDATES_CHANNEL:
 			# ...And the message didn't come from the bot...
 			if message.author.id != self.bot.user.id:
 				if message.content == "":

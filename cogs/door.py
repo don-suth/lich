@@ -56,7 +56,7 @@ class DoorCog(commands.GroupCog, group_name="door"):
 		pipe.set("door:status", "OPEN")
 		pipe.xadd(
 			"door:stream", {
-				"timestamp": datetime.now(timezone.utc),
+				"timestamp": datetime.now(timezone.utc).timestamp(),
 				"new_status": "OPEN",
 				"id_type": "discord",
 				"discord_id": discord_id,
@@ -84,7 +84,7 @@ class DoorCog(commands.GroupCog, group_name="door"):
 		pipe.set("door:status", "CLOSED")
 		pipe.xadd(
 			"door:stream", {
-				"timestamp": datetime.now(timezone.utc),
+				"timestamp": datetime.now(timezone.utc).timestamp(),
 				"new_status": "CLOSED",
 				"id_type": "discord",
 				"discord_id": discord_id,
@@ -114,7 +114,7 @@ class DoorCog(commands.GroupCog, group_name="door"):
 		"""
 		while True:
 			# Wait until the door status gets updated
-			message_info = await self.redis.xread({"door:stream": "$"}, count=1, block=0)[0][1][0][1]
+			message_info = (await self.redis.xread({"door:stream": "$"}, count=1, block=0))[0][1][0][1]
 			if message_info["source"] != "lich":
 				# Only post something if lich didn't update it
 				if message_info["new_status"] == "OPEN":

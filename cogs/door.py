@@ -60,7 +60,7 @@ class DoorCog(commands.GroupCog, group_name="door"):
 				"new_status": "OPEN",
 				"id_type": "discord",
 				"discord_id": discord_id,
-				"discord_name": discord_display_name,
+				"display_name": discord_display_name,
 				"source": "lich"
 			}
 		)
@@ -88,7 +88,7 @@ class DoorCog(commands.GroupCog, group_name="door"):
 				"new_status": "CLOSED",
 				"id_type": "discord",
 				"discord_id": discord_id,
-				"discord_name": discord_display_name,
+				"display_name": discord_display_name,
 				"source": "lich"
 			}
 		)
@@ -98,13 +98,13 @@ class DoorCog(commands.GroupCog, group_name="door"):
 	@app_commands.default_permissions()
 	@app_commands.command(description="Open the clubroom")
 	async def open(self, interaction: discord.Interaction):
-		await self.open_door(display_name=interaction.user.display_name)
+		await self.redis_open_door(discord_id=interaction.user.id, discord_display_name=interaction.user.display_name)
 		await interaction.response.send_message("Door opened.", ephemeral=True)
 
 	@app_commands.default_permissions()
 	@app_commands.command(description="Close the clubroom")
 	async def close(self, interaction: discord.Interaction):
-		await self.close_door(display_name=interaction.user.display_name)
+		await self.redis_close_door(discord_id=interaction.user.id, discord_display_name=interaction.user.display_name)
 		await interaction.response.send_message("Door closed.", ephemeral=True)
 	
 	@tasks.loop()
@@ -118,9 +118,9 @@ class DoorCog(commands.GroupCog, group_name="door"):
 			if message_info["source"] != "lich":
 				# Only post something if lich didn't update it
 				if message_info["new_status"] == "OPEN":
-					await self.open_door(message_info["member_name"])
+					await self.send_door_opened_notification(display_name=message_info["display_name"])
 				elif message_info["new_status"] == "CLOSED":
-					await self.close_door(message_info["member_name"])
+					await self.send_door_closed_notification(display_name=message_info["display_name"])
 			
 
 	@commands.Cog.listener()

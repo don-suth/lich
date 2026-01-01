@@ -158,8 +158,6 @@ class DoorCog(commands.GroupCog, group_name="door"):
 		if message.channel.id == DOOR_UPDATES_CHANNEL:
 			# ...And the message didn't come from the bot...
 			if message.author.id != self.bot.user.id:
-				if message.content == "":
-					print("Empty message")
 				contains_open = "open" in message.content.lower()
 				contains_closed = "close" in message.content.lower()
 

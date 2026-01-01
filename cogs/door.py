@@ -39,6 +39,29 @@ class DoorCog(commands.GroupCog, group_name="door"):
 		closed_embed.set_thumbnail(url="https://unigames.asn.au/static/images/misc/unigames_closed.png")
 		await self.bot.get_channel(DOOR_STATUS_CHANNEL).send(content="Door status: ", embed=closed_embed)
 	
+	async def check_user_is_gatekeeper(self, user: discord.User | discord.Member):
+		"""
+		Checks the redis store to see if a discord user's ID is linked to a Unigames account.
+		
+		(Before Feb 16th 2026): If they aren't linked, returns the user's discord display name,
+		and sends a warning message to the user reminding them to link their account.
+		
+		(On or after Feb 16th 2026): Will be changed to return the linked display name if so, or None if not.
+		"""
+		display_name = await self.redis.hget("lich:linked_accounts:gatekeepers", user.id)
+		if display_name is None:
+			display_name = user.display_name
+			await user.send(
+				f"Greetings citizen {display_name}! \n"
+				"*Your account is currently NOT linked with the Unigames Website* \n\n"
+				"Starting February 16th 2026, un-linked accounts will be restricted from using this feature. \n"
+				"Please link your account at your earliest convenience (https://unigames.asn.au/members/profile/me/) "
+				"to avoid disruption. \n\n"
+				"Thank you citizen!"
+			)
+		return display_name
+		
+	
 	async def redis_open_door(self, discord_id, discord_display_name):
 		"""
 		Updates Redis to open the Door.
@@ -98,13 +121,15 @@ class DoorCog(commands.GroupCog, group_name="door"):
 	@app_commands.default_permissions()
 	@app_commands.command(description="Open the clubroom")
 	async def open(self, interaction: discord.Interaction):
-		await self.redis_open_door(discord_id=interaction.user.id, discord_display_name=interaction.user.display_name)
+		display_name = self.check_user_is_gatekeeper(interaction.user)
+		await self.redis_open_door(discord_id=interaction.user.id, discord_display_name=display_name)
 		await interaction.response.send_message("Door opened.", ephemeral=True)
 
 	@app_commands.default_permissions()
 	@app_commands.command(description="Close the clubroom")
 	async def close(self, interaction: discord.Interaction):
-		await self.redis_close_door(discord_id=interaction.user.id, discord_display_name=interaction.user.display_name)
+		display_name = self.check_user_is_gatekeeper(interaction.user)
+		await self.redis_close_door(discord_id=interaction.user.id, discord_display_name=display_name)
 		await interaction.response.send_message("Door closed.", ephemeral=True)
 	
 	@tasks.loop()

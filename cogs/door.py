@@ -121,6 +121,10 @@ class DoorCog(commands.GroupCog, group_name="door"):
 	@app_commands.default_permissions()
 	@app_commands.command(description="Open the clubroom")
 	async def open(self, interaction: discord.Interaction):
+		"""
+		Discord App Command that updates the room status to open.
+		Feb 16th 2026: Update to disallow non-gatekeepers from using this.
+		"""
 		display_name = self.check_user_is_gatekeeper(interaction.user)
 		await self.redis_open_door(discord_id=interaction.user.id, discord_display_name=display_name)
 		await interaction.response.send_message("Door opened.", ephemeral=True)
@@ -128,6 +132,10 @@ class DoorCog(commands.GroupCog, group_name="door"):
 	@app_commands.default_permissions()
 	@app_commands.command(description="Close the clubroom")
 	async def close(self, interaction: discord.Interaction):
+		"""
+		Discord App Command that updates the room status to closed.
+		Feb 16th 2026: Update to disallow non-gatekeepers from using this.
+		"""
 		display_name = self.check_user_is_gatekeeper(interaction.user)
 		await self.redis_close_door(discord_id=interaction.user.id, discord_display_name=display_name)
 		await interaction.response.send_message("Door closed.", ephemeral=True)
@@ -153,6 +161,8 @@ class DoorCog(commands.GroupCog, group_name="door"):
 		"""
 			Listens to messages in the Door Updates Channel, and updates the door status
 			if it finds the words "open" or "closed" in the message.
+			
+			Feb 16th 2026: Update to disallow non-gatekeepers from triggering this.
 		"""
 		# If the message is from a particular channel...
 		if message.channel.id == DOOR_UPDATES_CHANNEL:
@@ -163,14 +173,16 @@ class DoorCog(commands.GroupCog, group_name="door"):
 
 				if contains_open and not contains_closed:
 					# Opem the door, and react to the post to confirm
-					await self.open_door(display_name=message.author.display_name)
+					display_name = await self.check_user_is_gatekeeper(message.author)
+					await self.redis_open_door(discord_id=message.author.id, discord_display_name=display_name)
 					await message.add_reaction("<a:room:1341342965859356682>")
 					await message.add_reaction("<a:is:1341343001351421992>")
 					await message.add_reaction("<a:open:1341343021601394770>")
 
 				elif contains_closed and not contains_open:
 					# Close the door, and react to the post to confirm
-					await self.close_door(display_name=message.author.display_name)
+					display_name = await self.check_user_is_gatekeeper(message.author)
+					await self.redis_close_door(discord_id=message.author.id, discord_display_name=display_name)
 					await message.add_reaction("<a:room:1341342965859356682>")
 					await message.add_reaction("<a:is:1341343001351421992>")
 					await message.add_reaction("<a:shut:1341343034918572123>")

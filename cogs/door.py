@@ -36,7 +36,7 @@ class DoorCog(commands.GroupCog, group_name="door"):
 			timestamp=datetime.now(tz=timezone(timedelta(hours=8))),
 		)
 		closed_embed.set_footer(text=f"Closed by {display_name}")
-		closed_embed.set_thumbnail(url="https://unigames.asn.au/static/images/misc/unigames_closed.png")
+		closed_embed.set_image(url="https://unigames.asn.au/static/images/misc/unigames_closed.png")
 		await self.bot.get_channel(DOOR_STATUS_CHANNEL).send(content="Door status: ", embed=closed_embed)
 	
 	async def check_user_is_gatekeeper(self, user: discord.User | discord.Member):

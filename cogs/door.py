@@ -17,7 +17,7 @@ class DoorCog(commands.GroupCog, group_name="door"):
 		self.bot = bot
 		self.redis = None
 
-	async def open_door(self, display_name):
+	async def send_door_opened_notification(self, display_name):
 		open_embed = discord.Embed(
 			title="Door Open!",
 			description="The door is open!",
@@ -27,8 +27,8 @@ class DoorCog(commands.GroupCog, group_name="door"):
 		open_embed.set_footer(text=f"Opened by {display_name}")
 		open_embed.set_image(url="https://unigames.asn.au/static/images/misc/unigames_open.png")
 		await self.bot.get_channel(DOOR_STATUS_CHANNEL).send(content="Door status: ", embed=open_embed)
-
-	async def close_door(self, display_name):
+	
+	async def send_door_closed_notification(self, display_name):
 		closed_embed = discord.Embed(
 			title="Door Closed!",
 			description="The door is closed!",
@@ -38,7 +38,63 @@ class DoorCog(commands.GroupCog, group_name="door"):
 		closed_embed.set_footer(text=f"Closed by {display_name}")
 		closed_embed.set_thumbnail(url="https://unigames.asn.au/static/images/misc/unigames_closed.png")
 		await self.bot.get_channel(DOOR_STATUS_CHANNEL).send(content="Door status: ", embed=closed_embed)
-
+	
+	async def redis_open_door(self, discord_id, discord_display_name):
+		"""
+		Updates Redis to open the Door.
+		This involves:
+			1) Changing the status of the "door:status" key.
+			2) Publishing the status on the Pubsub channel "door:updates".
+			3) Adding an entry to the Redis stream with:
+				- timestamp
+				- new status
+				- member id
+				- member name
+				- source (phylactery/lich)
+		"""
+		pipe = self.redis.pipeline()
+		pipe.set("door:status", "OPEN")
+		pipe.xadd(
+			"door:stream", {
+				"timestamp": datetime.now(timezone.utc),
+				"new_status": "OPEN",
+				"id_type": "discord",
+				"discord_id": discord_id,
+				"discord_name": discord_display_name,
+				"source": "lich"
+			}
+		)
+		pipe.publish("door:updates", "OPEN")
+		await pipe.execute()
+	
+	async def redis_close_door(self, discord_id, discord_display_name):
+		"""
+		Updates Redis to open the Door.
+		This involves:
+			1) Changing the status of the "door:status" key.
+			2) Publishing the status on the Pubsub channel "door:updates".
+			3) Adding an entry to the Redis stream with:
+				- timestamp
+				- new status
+				- member id
+				- member name
+				- source (phylactery/lich)
+		"""
+		pipe = self.redis.pipeline()
+		pipe.set("door:status", "CLOSED")
+		pipe.xadd(
+			"door:stream", {
+				"timestamp": datetime.now(timezone.utc),
+				"new_status": "CLOSED",
+				"id_type": "discord",
+				"discord_id": discord_id,
+				"discord_name": discord_display_name,
+				"source": "lich"
+			}
+		)
+		pipe.publish("door:updates", "CLOSED")
+		await pipe.execute()
+	
 	@app_commands.default_permissions()
 	@app_commands.command(description="Open the clubroom")
 	async def open(self, interaction: discord.Interaction):

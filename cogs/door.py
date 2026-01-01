@@ -18,8 +18,6 @@ class DoorCog(commands.GroupCog, group_name="door"):
 		self.redis = None
 
 	async def open_door(self, display_name):
-		await self.redis.set("door:status", "OPEN")
-		await self.redis.publish("door:updates", "OPEN")
 		open_embed = discord.Embed(
 			title="Door Open!",
 			description="The door is open!",
@@ -31,8 +29,6 @@ class DoorCog(commands.GroupCog, group_name="door"):
 		await self.bot.get_channel(DOOR_STATUS_CHANNEL).send(content="Door status: ", embed=open_embed)
 
 	async def close_door(self, display_name):
-		await self.redis.set("door:status", "CLOSED")
-		await self.redis.publish("door:updates", "CLOSED")
 		closed_embed = discord.Embed(
 			title="Door Closed!",
 			description="The door is closed!",

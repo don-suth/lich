@@ -1,7 +1,7 @@
 import os
 import discord
 from discord import app_commands
-from discord.ext import commands
+from discord.ext import commands, tasks
 import redis.asyncio as redis
 from datetime import datetime, timezone, timedelta
 
@@ -9,7 +9,7 @@ from datetime import datetime, timezone, timedelta
 DOOR_UPDATES_CHANNEL = 1284487409987223613
 
 # Channel where the bot posts updates about the door
-DOOR_STATUS_CHANNEL = 1313015976551383103
+DOOR_STATUS_CHANNEL = 1284487409987223613
 
 
 class DoorCog(commands.GroupCog, group_name="door"):
@@ -17,78 +17,184 @@ class DoorCog(commands.GroupCog, group_name="door"):
 		self.bot = bot
 		self.redis = None
 
-	async def send_or_edit_door_message(self, embed):
-		door_message_id = await self.redis.get("door_message:id")
-		if door_message_id is None:
-			door_message = await self.bot.get_channel(DOOR_STATUS_CHANNEL).send(content="Door status: ", embed=embed)
-			await self.redis.set("door_message:id", door_message.id)
-		else:
-			door_message = await self.bot.get_channel(DOOR_STATUS_CHANNEL).fetch_message(door_message_id)
-			await door_message.edit(content="Door status: ", embed=embed)
-
-	async def open_door(self, display_name):
-		await self.redis.set("door:status", "OPEN")
-		await self.redis.publish("door:updates", "OPEN")
+	async def send_door_opened_notification(self, display_name):
 		open_embed = discord.Embed(
 			title="Door Open!",
 			description="The door is open!",
 			colour=discord.Colour.green(),
 			timestamp=datetime.now(tz=timezone(timedelta(hours=8))),
 		)
-		open_embed.set_footer(text=f"Last opened by {display_name}")
+		open_embed.set_footer(text=f"Opened by {display_name}")
 		open_embed.set_image(url="https://unigames.asn.au/static/images/misc/unigames_open.png")
-		await self.send_or_edit_door_message(embed=open_embed)
-
-	async def close_door(self, display_name):
-		await self.redis.set("door:status", "CLOSED")
-		await self.redis.publish("door:updates", "CLOSED")
+		await self.bot.get_channel(DOOR_STATUS_CHANNEL).send(content="Door status: ", embed=open_embed)
+	
+	async def send_door_closed_notification(self, display_name):
 		closed_embed = discord.Embed(
 			title="Door Closed!",
 			description="The door is closed!",
 			colour=discord.Colour.red(),
 			timestamp=datetime.now(tz=timezone(timedelta(hours=8))),
 		)
-		closed_embed.set_footer(text=f"Last closed by {display_name}")
-		closed_embed.set_thumbnail(url="https://unigames.asn.au/static/images/misc/unigames_closed.png")
-		await self.send_or_edit_door_message(embed=closed_embed)
-
+		closed_embed.set_footer(text=f"Closed by {display_name}")
+		closed_embed.set_image(url="https://unigames.asn.au/static/images/misc/unigames_closed.png")
+		await self.bot.get_channel(DOOR_STATUS_CHANNEL).send(content="Door status: ", embed=closed_embed)
+	
+	async def check_user_is_gatekeeper(self, user: discord.User | discord.Member):
+		"""
+		Checks the redis store to see if a discord user's ID is linked to a Unigames account.
+		
+		(Before Feb 16th 2026): If they aren't linked, returns the user's discord display name,
+		and sends a warning message to the user reminding them to link their account.
+		
+		(On or after Feb 16th 2026): Will be changed to return the linked display name if so, or None if not.
+		"""
+		display_name = await self.redis.hget("lich:linked_accounts:gatekeepers", user.id)
+		if display_name is None:
+			display_name = user.display_name
+			await user.send(
+				f"Greetings citizen {display_name}! \n"
+				"*Your account is currently NOT linked with the Unigames Website* \n\n"
+				"Starting February 16th 2026, un-linked accounts will be restricted from using this feature. \n"
+				"Please link your account at your earliest convenience (https://unigames.asn.au/members/profile/me/) "
+				"to avoid disruption. \n\n"
+				"Thank you citizen!"
+			)
+		return display_name
+		
+	
+	async def redis_open_door(self, discord_id, discord_display_name):
+		"""
+		Updates Redis to open the Door.
+		This involves:
+			1) Changing the status of the following keys:
+				- "door:status"
+				- "door:timestamp"
+				- "door:display_name"
+			2) Publishing the status on the Pubsub channel "door:updates".
+			3) Adding an entry to the Redis stream with:
+				- timestamp
+				- new status
+				- discord id
+				- display name
+				- source (phylactery/lich)
+		"""
+		pipe = self.redis.pipeline()
+		timestamp = datetime.now(timezone.utc).timestamp()
+		pipe.set("door:status", "OPEN")
+		pipe.set("door:timestamp", timestamp)
+		pipe.set("door:display_name", discord_display_name)
+		pipe.xadd(
+			"door:stream", {
+				"timestamp": timestamp,
+				"new_status": "OPEN",
+				"id_type": "discord",
+				"discord_id": discord_id,
+				"display_name": discord_display_name,
+				"source": "lich"
+			}
+		)
+		pipe.publish("door:updates", "OPEN")
+		await pipe.execute()
+	
+	async def redis_close_door(self, discord_id, discord_display_name):
+		"""
+		Updates Redis to open the Door.
+		This involves:
+			1) Changing the status of the following keys:
+				- "door:status"
+				- "door:timestamp"
+				- "door:display_name"
+			2) Publishing the status on the Pubsub channel "door:updates".
+			3) Adding an entry to the Redis stream with:
+				- timestamp
+				- new status
+				- discord id
+				- display name
+				- source (phylactery/lich)
+		"""
+		pipe = self.redis.pipeline()
+		timestamp = datetime.now(timezone.utc).timestamp()
+		pipe.set("door:status", "CLOSED")
+		pipe.set("door:timestamp", timestamp)
+		pipe.set("door:display_name", discord_display_name)
+		pipe.xadd(
+			"door:stream", {
+				"timestamp": timestamp,
+				"new_status": "CLOSED",
+				"id_type": "discord",
+				"discord_id": discord_id,
+				"display_name": discord_display_name,
+				"source": "lich"
+			}
+		)
+		pipe.publish("door:updates", "CLOSED")
+		await pipe.execute()
+	
 	@app_commands.default_permissions()
 	@app_commands.command(description="Open the clubroom")
 	async def open(self, interaction: discord.Interaction):
-		await self.open_door(display_name=interaction.user.display_name)
+		"""
+		Discord App Command that updates the room status to open.
+		Feb 16th 2026: Update to disallow non-gatekeepers from using this.
+		"""
+		display_name = await self.check_user_is_gatekeeper(interaction.user)
+		await self.redis_open_door(discord_id=interaction.user.id, discord_display_name=display_name)
 		await interaction.response.send_message("Door opened.", ephemeral=True)
 
 	@app_commands.default_permissions()
 	@app_commands.command(description="Close the clubroom")
 	async def close(self, interaction: discord.Interaction):
-		await self.close_door(display_name=interaction.user.display_name)
+		"""
+		Discord App Command that updates the room status to closed.
+		Feb 16th 2026: Update to disallow non-gatekeepers from using this.
+		"""
+		display_name = await self.check_user_is_gatekeeper(interaction.user)
+		await self.redis_close_door(discord_id=interaction.user.id, discord_display_name=display_name)
 		await interaction.response.send_message("Door closed.", ephemeral=True)
+	
+	@tasks.loop()
+	async def door_watcher(self):
+		"""
+		Watch for door updates made by other services and post about them.
+		"""
+		while True:
+			# Wait until the door status gets updated
+			message_info = (await self.redis.xread({"door:stream": "$"}, count=1, block=0))[0][1][0][1]
+			if message_info["source"] != "lich":
+				# Only post something if lich didn't update it
+				if message_info["new_status"] == "OPEN":
+					await self.send_door_opened_notification(display_name=message_info["display_name"])
+				elif message_info["new_status"] == "CLOSED":
+					await self.send_door_closed_notification(display_name=message_info["display_name"])
+			
 
 	@commands.Cog.listener()
 	async def on_message(self, message: discord.Message):
 		"""
 			Listens to messages in the Door Updates Channel, and updates the door status
 			if it finds the words "open" or "closed" in the message.
+			
+			Feb 16th 2026: Update to disallow non-gatekeepers from triggering this.
 		"""
 		# If the message is from a particular channel...
-		if message.channel.id == 1284487409987223613:
+		if message.channel.id == DOOR_UPDATES_CHANNEL:
 			# ...And the message didn't come from the bot...
 			if message.author.id != self.bot.user.id:
-				if message.content == "":
-					print("Empty message")
 				contains_open = "open" in message.content.lower()
 				contains_closed = "close" in message.content.lower()
 
 				if contains_open and not contains_closed:
 					# Opem the door, and react to the post to confirm
-					await self.open_door(display_name=message.author.display_name)
+					display_name = await self.check_user_is_gatekeeper(message.author)
+					await self.redis_open_door(discord_id=message.author.id, discord_display_name=display_name)
 					await message.add_reaction("<a:room:1341342965859356682>")
 					await message.add_reaction("<a:is:1341343001351421992>")
 					await message.add_reaction("<a:open:1341343021601394770>")
 
 				elif contains_closed and not contains_open:
 					# Close the door, and react to the post to confirm
-					await self.close_door(display_name=message.author.display_name)
+					display_name = await self.check_user_is_gatekeeper(message.author)
+					await self.redis_close_door(discord_id=message.author.id, discord_display_name=display_name)
 					await message.add_reaction("<a:room:1341342965859356682>")
 					await message.add_reaction("<a:is:1341343001351421992>")
 					await message.add_reaction("<a:shut:1341343034918572123>")
@@ -114,9 +220,13 @@ class DoorCog(commands.GroupCog, group_name="door"):
 		redis_host = os.environ.get("REDIS_HOST", "localhost")
 		self.redis = await redis.Redis(host=redis_host, port=6379, decode_responses=True)
 		print(f"\t - {self.__class__.__name__} loaded")
+		self.door_watcher.start()
+		print(f"\t\t - Task 'door_watcher' started")
 
 	async def cog_unload(self):
 		print(f"\t - {self.__class__.__name__} unloaded")
+		self.door_watcher.stop()
+		print(f"\t\t - Task 'door_watcher' stopped")
 		await self.redis.aclose()
 
 

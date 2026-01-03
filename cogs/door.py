@@ -137,7 +137,7 @@ class DoorCog(commands.GroupCog, group_name="door"):
 		Discord App Command that updates the room status to open.
 		Feb 16th 2026: Update to disallow non-gatekeepers from using this.
 		"""
-		display_name = self.check_user_is_gatekeeper(interaction.user)
+		display_name = await self.check_user_is_gatekeeper(interaction.user)
 		await self.redis_open_door(discord_id=interaction.user.id, discord_display_name=display_name)
 		await interaction.response.send_message("Door opened.", ephemeral=True)
 
@@ -148,7 +148,7 @@ class DoorCog(commands.GroupCog, group_name="door"):
 		Discord App Command that updates the room status to closed.
 		Feb 16th 2026: Update to disallow non-gatekeepers from using this.
 		"""
-		display_name = self.check_user_is_gatekeeper(interaction.user)
+		display_name = await self.check_user_is_gatekeeper(interaction.user)
 		await self.redis_close_door(discord_id=interaction.user.id, discord_display_name=display_name)
 		await interaction.response.send_message("Door closed.", ephemeral=True)
 	

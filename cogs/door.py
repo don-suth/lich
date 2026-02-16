@@ -42,26 +42,23 @@ class DoorCog(commands.GroupCog, group_name="door"):
 	async def check_user_is_gatekeeper(self, user: discord.User | discord.Member):
 		"""
 		Checks the redis store to see if a discord user's ID is linked to a Unigames account.
-		
-		(Before Feb 16th 2026): If they aren't linked, returns the user's discord display name,
-		and sends a warning message to the user reminding them to link their account.
-		
-		(On or after Feb 16th 2026): Will be changed to return the linked display name if so, or None if not.
+		If they aren't linked, returns None, and sends a warning message to the user reminding
+		them to link their account.
+
+		If they are linked, returns the linked display name.
 		"""
 		display_name = await self.redis.hget("lich:linked_accounts:gatekeepers", user.id)
 		if display_name is None:
-			display_name = user.display_name
 			await user.send(
 				f"Greetings citizen {display_name}! \n"
 				"*Your account is currently NOT linked with the Unigames Website* \n\n"
-				"Starting February 16th 2026, un-linked accounts will be restricted from using this feature. \n"
+				"As of February 16th 2026, un-linked accounts are restricted from using this feature. \n"
 				"Please link your account at your earliest convenience (https://unigames.asn.au/members/profile/me/) "
-				"to avoid disruption. \n\n"
+				"to enable usage of this feature. \n\n"
 				"Thank you citizen!"
 			)
 		return display_name
-		
-	
+
 	async def redis_open_door(self, discord_id, discord_display_name):
 		"""
 		Updates Redis to open the Door.
@@ -135,22 +132,28 @@ class DoorCog(commands.GroupCog, group_name="door"):
 	async def open(self, interaction: discord.Interaction):
 		"""
 		Discord App Command that updates the room status to open.
-		Feb 16th 2026: Update to disallow non-gatekeepers from using this.
+		Non-gatekeepers are prohibited from using this.
 		"""
 		display_name = await self.check_user_is_gatekeeper(interaction.user)
-		await self.redis_open_door(discord_id=interaction.user.id, discord_display_name=display_name)
-		await interaction.response.send_message("Door opened.", ephemeral=True)
+		if display_name is None:
+			await interaction.response.send_message("Failed. Check your messages.", ephemeral=True)
+		else:
+			await self.redis_open_door(discord_id=interaction.user.id, discord_display_name=display_name)
+			await interaction.response.send_message("Door opened.", ephemeral=True)
 
 	@app_commands.default_permissions()
 	@app_commands.command(description="Close the clubroom")
 	async def close(self, interaction: discord.Interaction):
 		"""
 		Discord App Command that updates the room status to closed.
-		Feb 16th 2026: Update to disallow non-gatekeepers from using this.
+		Non-gatekeepers are prohibited from using this.
 		"""
 		display_name = await self.check_user_is_gatekeeper(interaction.user)
-		await self.redis_close_door(discord_id=interaction.user.id, discord_display_name=display_name)
-		await interaction.response.send_message("Door closed.", ephemeral=True)
+		if display_name is None:
+			await interaction.response.send_message("Failed. Check your messages.", ephemeral=True)
+		else:
+			await self.redis_close_door(discord_id=interaction.user.id, discord_display_name=display_name)
+			await interaction.response.send_message("Door closed.", ephemeral=True)
 	
 	@tasks.loop()
 	async def door_watcher(self):
@@ -173,8 +176,7 @@ class DoorCog(commands.GroupCog, group_name="door"):
 		"""
 			Listens to messages in the Door Updates Channel, and updates the door status
 			if it finds the words "open" or "closed" in the message.
-			
-			Feb 16th 2026: Update to disallow non-gatekeepers from triggering this.
+			Non-linked gatekeepers will get an error message instead.
 		"""
 		# If the message is from a particular channel...
 		if message.channel.id == DOOR_UPDATES_CHANNEL:
@@ -182,15 +184,16 @@ class DoorCog(commands.GroupCog, group_name="door"):
 			if message.author.id != self.bot.user.id:
 				contains_open = "open" in message.content.lower()
 				contains_closed = "close" in message.content.lower()
-
-				if contains_open and not contains_closed:
+				display_name = await self.check_user_is_gatekeeper(message.author)
+				if display_name is None:
+					await message.add_reaction("❌")
+				elif contains_open and not contains_closed:
 					# Opem the door, and react to the post to confirm
 					display_name = await self.check_user_is_gatekeeper(message.author)
 					await self.redis_open_door(discord_id=message.author.id, discord_display_name=display_name)
 					await message.add_reaction("<a:room:1341342965859356682>")
 					await message.add_reaction("<a:is:1341343001351421992>")
 					await message.add_reaction("<a:open:1341343021601394770>")
-
 				elif contains_closed and not contains_open:
 					# Close the door, and react to the post to confirm
 					display_name = await self.check_user_is_gatekeeper(message.author)

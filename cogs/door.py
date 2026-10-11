@@ -183,7 +183,7 @@ class DoorCog(commands.GroupCog, group_name="door"):
 			# ...And the message didn't come from the bot...
 			if message.author.id != self.bot.user.id:
 				contains_open = "open" in message.content.lower()
-				contains_closed = "close" in message.content.lower()
+				contains_closed = "close" in message.content.lower() or "shut" in message.content.lower()
 				display_name = await self.check_user_is_gatekeeper(message.author)
 				if display_name is None:
 					await message.add_reaction("❌")
@@ -205,7 +205,7 @@ class DoorCog(commands.GroupCog, group_name="door"):
 				elif contains_open and contains_closed:
 					# Ambiguous - do nothing and let the user know.
 					await message.author.send(
-						'Your door status update contained both "open" and "close". \n'
+						'Your door status update contained both "open" and "close"/"shut". \n'
 						'Please send a new update with exactly one of those keywords. \n'
 						'Thank you, citizen! Remember, compliance is mandatory!'
 					)
@@ -213,7 +213,7 @@ class DoorCog(commands.GroupCog, group_name="door"):
 				elif not contains_open and not contains_closed:
 					# No detected updates - do nothing and let the user know.
 					await message.author.send(
-						'Your door status update didn\'t contain either "open" or "close". \n'
+						'Your door status update didn\'t contain any "open", "close", or "shut". \n'
 						'Please send a new update with exactly one of those keywords. \n'
 						'Thank you, citizen! Remember, compliance is mandatory!'
 					)
